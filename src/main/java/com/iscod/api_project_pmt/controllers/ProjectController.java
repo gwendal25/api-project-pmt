@@ -2,9 +2,14 @@ package com.iscod.api_project_pmt.controllers;
 
 import com.iscod.api_project_pmt.dtos.ProjectDto;
 import com.iscod.api_project_pmt.dtos.ProjectRequest;
+import com.iscod.api_project_pmt.dtos.TaskDto;
+import com.iscod.api_project_pmt.dtos.TaskRequest;
 import com.iscod.api_project_pmt.entities.Project;
+import com.iscod.api_project_pmt.entities.Task;
 import com.iscod.api_project_pmt.mappers.ProjectMapper;
+import com.iscod.api_project_pmt.mappers.TaskMapper;
 import com.iscod.api_project_pmt.repositories.ProjectRepository;
+import com.iscod.api_project_pmt.repositories.TaskRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,7 +23,9 @@ import java.util.List;
 @RequestMapping("/projects")
 public class ProjectController {
     private final ProjectRepository projectRepository;
+    private final TaskRepository taskRepository;
     private final ProjectMapper projectMapper;
+    private final TaskMapper taskMapper;
 
     @GetMapping
     public List<ProjectDto> getAllProjects() {
@@ -45,6 +52,24 @@ public class ProjectController {
         ProjectDto projectDto = projectMapper.toDto(project);
         var uri = uriBuilder.path("/projects/{id}").buildAndExpand(projectDto.getId()).toUri();
         return ResponseEntity.created(uri).body(projectDto);
+    }
+
+    @PostMapping("/{id}/tasks")
+    public ResponseEntity<TaskDto> CreateTask(@PathVariable Long id, @RequestBody TaskRequest taskRequest, UriComponentsBuilder uriBuilder) {
+        Project project = projectRepository.findById(id).orElse(null);
+
+        if(project == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        Task task = taskMapper.toTask(taskRequest);
+        task.setProject(project);
+        project.addTask(task);
+        taskRepository.save(task);
+        projectRepository.save(project);
+        TaskDto taskDto = taskMapper.toDto(task);
+        var uri = uriBuilder.path("/tasks/{id}").buildAndExpand(taskDto.getId()).toUri();
+        return ResponseEntity.created(uri).body(taskDto);
     }
 
     @PutMapping("/{id}")

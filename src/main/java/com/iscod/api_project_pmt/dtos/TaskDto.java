@@ -7,17 +7,15 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.Date;
-import java.util.List;
 
 @AllArgsConstructor
 @NoArgsConstructor
 @Setter
 @Getter
-public class ProjectDto {
+public class TaskDto {
     private Long id;
     private String name;
     private String description;
     @JsonFormat(pattern = "yyyy-MM-dd")
-    private Date startDate;
-    private List<TaskDto> tasks;
+    private Date endDate;
 }

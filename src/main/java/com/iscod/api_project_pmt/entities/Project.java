@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -26,4 +28,17 @@ public class Project {
 
     @Column(name = "start_date")
     private Date startDate;
+
+    @OneToMany(mappedBy = "project", cascade = {CascadeType.PERSIST})
+    private Set<Task> tasks = new HashSet<Task>();
+
+    public void addTask(Task task) {
+        tasks.add(task);
+    }
+
+    public Project(String name, String description, Date startDate) {
+        this.name = name;
+        this.description = description;
+        this.startDate = startDate;
+    }
 }
