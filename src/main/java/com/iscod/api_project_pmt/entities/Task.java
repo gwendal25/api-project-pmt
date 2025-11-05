@@ -1,6 +1,7 @@
 package com.iscod.api_project_pmt.entities;
 
 import com.iscod.api_project_pmt.enums.TaskPriority;
+import com.iscod.api_project_pmt.enums.TaskStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -30,6 +31,9 @@ public class Task {
 
     @Column(name="task_priority")
     private TaskPriority taskPriority;
+
+    @Column(name="task_status")
+    private TaskStatus taskStatus;
 
     @ManyToOne(cascade = {CascadeType.PERSIST})
     @JoinColumn(name="project_id", nullable = false)
