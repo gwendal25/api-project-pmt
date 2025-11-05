@@ -1,6 +1,7 @@
 package com.iscod.api_project_pmt.dtos;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.iscod.api_project_pmt.enums.TaskPriority;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -16,6 +17,7 @@ public class TaskDto {
     private Long id;
     private String name;
     private String description;
+    private TaskPriority taskPriority;
     @JsonFormat(pattern = "yyyy-MM-dd")
     private Date endDate;
 }
