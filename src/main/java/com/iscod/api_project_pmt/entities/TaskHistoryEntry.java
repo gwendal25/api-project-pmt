@@ -6,9 +6,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.util.Date;
-import java.util.HashSet;
 import java.util.Objects;
-import java.util.Set;
 
 @Getter
 @Setter
@@ -16,8 +14,8 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name="tasks")
-public class Task {
+@Table(name="tasks_history")
+public class TaskHistoryEntry {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name="id")
@@ -39,17 +37,10 @@ public class Task {
     private TaskStatus taskStatus;
 
     @ManyToOne(cascade = {CascadeType.PERSIST})
-    @JoinColumn(name="project_id", nullable = false)
-    private Project project;
+    @JoinColumn(name = "task_id", nullable = false)
+    private Task task;
 
-    @OneToMany(mappedBy="task", cascade = {CascadeType.PERSIST})
-    private Set<TaskHistoryEntry> taskHistoryEntries = new HashSet<>();
-
-    public void addTaskHistoryEntry(TaskHistoryEntry taskHistoryEntry) {
-        taskHistoryEntries.add(taskHistoryEntry);
-    }
-
-    public Task(String name, String description, Date endDate, TaskPriority taskPriority, TaskStatus taskStatus) {
+    public TaskHistoryEntry(String name, String description, Date endDate, TaskPriority taskPriority, TaskStatus taskStatus) {
         this.name = name;
         this.description = description;
         this.endDate = endDate;
@@ -59,23 +50,21 @@ public class Task {
 
     @Override
     public String toString() {
-        return "Task{" +
+        return "TaskHistoryEntry{" +
                 "id=" + id +
                 ", name='" + name + '\'' +
                 ", description='" + description + '\'' +
                 ", endDate=" + endDate +
                 ", taskPriority=" + taskPriority +
                 ", taskStatus=" + taskStatus +
-                ", project=" + project +
-                ", taskHistoryEntries=" + taskHistoryEntries +
                 '}';
     }
 
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
-        Task task = (Task) o;
-        return Objects.equals(name, task.name) && Objects.equals(description, task.description) && Objects.equals(endDate, task.endDate) && taskPriority == task.taskPriority && taskStatus == task.taskStatus;
+        TaskHistoryEntry that = (TaskHistoryEntry) o;
+        return Objects.equals(name, that.name) && Objects.equals(description, that.description) && Objects.equals(endDate, that.endDate) && taskPriority == that.taskPriority && taskStatus == that.taskStatus;
     }
 
     @Override

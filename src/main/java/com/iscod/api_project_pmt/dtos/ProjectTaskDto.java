@@ -9,13 +9,12 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.Date;
-import java.util.List;
 
 @AllArgsConstructor
 @NoArgsConstructor
 @Setter
 @Getter
-public class TaskDto {
+public class ProjectTaskDto {
     private Long id;
     private String name;
     private String description;
@@ -23,14 +22,4 @@ public class TaskDto {
     private TaskStatus taskStatus;
     @JsonFormat(pattern = "yyyy-MM-dd")
     private Date endDate;
-    private List<TaskHistoryEntryDto> taskHistoryEntries;
-
-    public TaskDto(Long id, String name, String description, TaskPriority taskPriority, TaskStatus taskStatus, Date endDate) {
-        this.id = id;
-        this.name = name;
-        this.description = description;
-        this.taskPriority = taskPriority;
-        this.taskStatus = taskStatus;
-        this.endDate = endDate;
-    }
 }

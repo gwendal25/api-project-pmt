@@ -19,5 +19,5 @@ public class ProjectDto {
     private String description;
     @JsonFormat(pattern = "yyyy-MM-dd")
     private Date startDate;
-    private List<TaskDto> tasks;
+    private List<ProjectTaskDto> tasks;
 }

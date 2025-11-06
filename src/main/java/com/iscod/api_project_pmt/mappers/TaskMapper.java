@@ -1,14 +1,36 @@
 package com.iscod.api_project_pmt.mappers;
 
 import com.iscod.api_project_pmt.dtos.TaskDto;
+import com.iscod.api_project_pmt.dtos.TaskHistoryEntryDto;
 import com.iscod.api_project_pmt.dtos.TaskRequest;
 import com.iscod.api_project_pmt.entities.Task;
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingTarget;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.List;
 
 @Mapper(componentModel = "spring")
-public interface TaskMapper {
-    TaskDto toDto(Task task);
-    Task toTask(TaskRequest taskRequest);
-    void update(TaskRequest taskRequest, @MappingTarget Task task);
+public abstract class TaskMapper {
+    @Autowired
+    TaskHistoryEntryMapper taskHistoryEntryMapper;
+
+    public abstract TaskDto toDto(Task task);
+    public abstract Task toTask(TaskRequest taskRequest);
+    public abstract void update(TaskRequest taskRequest, @MappingTarget Task task);
+    public TaskDto toDtoWithHistory(Task task) {
+        TaskDto taskDto = new TaskDto(
+                task.getId(),
+                task.getName(),
+                task.getDescription(),
+                task.getTaskPriority(),
+                task.getTaskStatus(),
+                task.getEndDate()
+        );
+        List<TaskHistoryEntryDto> taskList = task.getTaskHistoryEntries().stream()
+                .map(taskHistoryEntry -> taskHistoryEntryMapper.toDto(taskHistoryEntry))
+                .toList();
+        taskDto.setTaskHistoryEntries(taskList);
+    return taskDto;
+    }
 }
