@@ -1,8 +1,10 @@
 package com.iscod.api_project_pmt.controllers;
 
+import com.iscod.api_project_pmt.dtos.SimpleTaskDto;
 import com.iscod.api_project_pmt.dtos.TaskDto;
 import com.iscod.api_project_pmt.dtos.TaskRequest;
 import com.iscod.api_project_pmt.entities.Task;
+import com.iscod.api_project_pmt.mappers.SimpleTaskMapper;
 import com.iscod.api_project_pmt.mappers.TaskMapper;
 import com.iscod.api_project_pmt.repositories.ProjectRepository;
 import com.iscod.api_project_pmt.repositories.TaskRepository;
@@ -19,6 +21,7 @@ public class TaskController {
     private final ProjectRepository projectRepository;
     private final TaskRepository taskRepository;
     private final TaskMapper taskMapper;
+    private final SimpleTaskMapper simpleTaskMapper;
     private final TaskHistoryEntryService taskHistoryEntryService;
 
     @GetMapping("/{id}")
@@ -28,6 +31,15 @@ public class TaskController {
             return ResponseEntity.notFound().build();
         }
         return ResponseEntity.ok(taskMapper.toDtoWithHistory(task));
+    }
+
+    @GetMapping("/{id}/no-history")
+    public ResponseEntity<SimpleTaskDto> getTaskWithoutHistory(@PathVariable Long id) {
+        Task task = taskRepository.findById(id).orElse(null);
+        if(task == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(simpleTaskMapper.toDto(task));
     }
 
     @PutMapping("/{id}")
