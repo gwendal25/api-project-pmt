@@ -22,4 +22,6 @@ public class TaskHistoryEntryDto {
     private TaskStatus taskStatus;
     @JsonFormat(pattern = "yyyy-MM-dd")
     private Date endDate;
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private Date editDate;
 }

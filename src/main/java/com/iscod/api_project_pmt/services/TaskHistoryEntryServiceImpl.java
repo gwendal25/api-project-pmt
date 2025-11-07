@@ -10,6 +10,8 @@ import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
+
 @Data
 @Service
 public class TaskHistoryEntryServiceImpl implements TaskHistoryEntryService {
@@ -32,6 +34,7 @@ public class TaskHistoryEntryServiceImpl implements TaskHistoryEntryService {
                     task.getTaskPriority(),
                     task.getTaskStatus()
             );
+            taskHistoryEntry.setEditDate(new Date());
             taskHistoryEntry.setTask(task);
             taskMapper.update(taskRequest, task);
             task.addTaskHistoryEntry(taskHistoryEntry);

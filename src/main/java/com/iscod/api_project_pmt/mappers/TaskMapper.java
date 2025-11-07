@@ -27,9 +27,10 @@ public abstract class TaskMapper {
                 task.getTaskStatus(),
                 task.getEndDate()
         );
-        List<TaskHistoryEntryDto> taskList = task.getTaskHistoryEntries().stream()
+        List<TaskHistoryEntryDto> taskList = new java.util.ArrayList<>(task.getTaskHistoryEntries().stream()
                 .map(taskHistoryEntry -> taskHistoryEntryMapper.toDto(taskHistoryEntry))
-                .toList();
+                .toList());
+        taskList.sort((t1, t2) -> t2.getEditDate().compareTo(t1.getEditDate()));
         taskDto.setTaskHistoryEntries(taskList);
     return taskDto;
     }

@@ -30,6 +30,9 @@ public class TaskHistoryEntry {
     @Column(name="start_date")
     private Date endDate;
 
+    @Column(name="edit_date")
+    private Date editDate;
+
     @Column(name="task_priority")
     private TaskPriority taskPriority;
 
