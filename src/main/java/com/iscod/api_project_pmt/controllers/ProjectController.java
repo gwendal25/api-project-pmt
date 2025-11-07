@@ -1,12 +1,10 @@
 package com.iscod.api_project_pmt.controllers;
 
-import com.iscod.api_project_pmt.dtos.ProjectDto;
-import com.iscod.api_project_pmt.dtos.ProjectRequest;
-import com.iscod.api_project_pmt.dtos.TaskDto;
-import com.iscod.api_project_pmt.dtos.TaskRequest;
+import com.iscod.api_project_pmt.dtos.*;
 import com.iscod.api_project_pmt.entities.Project;
 import com.iscod.api_project_pmt.entities.Task;
 import com.iscod.api_project_pmt.mappers.ProjectMapper;
+import com.iscod.api_project_pmt.mappers.SimpleProjectMapper;
 import com.iscod.api_project_pmt.mappers.TaskMapper;
 import com.iscod.api_project_pmt.repositories.ProjectRepository;
 import com.iscod.api_project_pmt.repositories.TaskRepository;
@@ -25,13 +23,14 @@ public class ProjectController {
     private final ProjectRepository projectRepository;
     private final TaskRepository taskRepository;
     private final ProjectMapper projectMapper;
+    private final SimpleProjectMapper simpleProjectMapper;
     private final TaskMapper taskMapper;
 
     @GetMapping
-    public List<ProjectDto> getAllProjects() {
+    public List<SimpleProjectDto> getAllProjects() {
         return projectRepository.findAll()
                 .stream()
-                .map(projectMapper::toDto)
+                .map(simpleProjectMapper::toDto)
                 .toList();
     }
 
