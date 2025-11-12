@@ -4,6 +4,7 @@ import com.iscod.api_project_pmt.enums.TaskPriority;
 import com.iscod.api_project_pmt.enums.TaskStatus;
 import jakarta.persistence.*;
 import lombok.*;
+import org.joda.time.DateTimeComparator;
 
 import java.util.Date;
 import java.util.HashSet;
@@ -29,7 +30,7 @@ public class Task {
     @Column(name="description")
     private String description;
 
-    @Column(name="start_date")
+    @Column(name="end_date")
     private Date endDate;
 
     @Column(name="task_priority")
@@ -75,7 +76,7 @@ public class Task {
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
         Task task = (Task) o;
-        return Objects.equals(name, task.name) && Objects.equals(description, task.description) && Objects.equals(endDate, task.endDate) && taskPriority == task.taskPriority && taskStatus == task.taskStatus;
+        return Objects.equals(name, task.name) && Objects.equals(description, task.description) && DateTimeComparator.getDateOnlyInstance().compare(endDate, task.endDate) == 0 && taskPriority == task.taskPriority && taskStatus == task.taskStatus;
     }
 
     @Override
