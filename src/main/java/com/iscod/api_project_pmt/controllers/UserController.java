@@ -1,6 +1,7 @@
 package com.iscod.api_project_pmt.controllers;
 
 import com.iscod.api_project_pmt.dtos.UserDto;
+import com.iscod.api_project_pmt.dtos.UserLoginDto;
 import com.iscod.api_project_pmt.dtos.UserRequest;
 import com.iscod.api_project_pmt.entities.User;
 import com.iscod.api_project_pmt.mappers.UserMapper;
@@ -55,5 +56,19 @@ public class UserController {
         UserDto userDto = userMapper.toDto(newUser);
         var uri = uriBuilder.path("/users/{id}").buildAndExpand(userDto.getId()).toUri();
         return ResponseEntity.created(uri).body(userDto);
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<UserDto> login(@Valid @RequestBody UserLoginDto userLoginDto) {
+        User user = userRepository.findByEmail(userLoginDto.getEmail()).orElse(null);
+        if(user == null) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        if(!userLoginDto.getPassword().equals(user.getPassword())) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        return ResponseEntity.ok(userMapper.toDto(user));
     }
 }
