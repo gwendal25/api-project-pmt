@@ -2,12 +2,17 @@ package com.iscod.api_project_pmt.controllers;
 
 import com.iscod.api_project_pmt.dtos.*;
 import com.iscod.api_project_pmt.entities.Project;
+import com.iscod.api_project_pmt.entities.ProjectUser;
 import com.iscod.api_project_pmt.entities.Task;
+import com.iscod.api_project_pmt.entities.User;
+import com.iscod.api_project_pmt.enums.UserRole;
 import com.iscod.api_project_pmt.mappers.ProjectMapper;
 import com.iscod.api_project_pmt.mappers.SimpleProjectMapper;
 import com.iscod.api_project_pmt.mappers.TaskMapper;
 import com.iscod.api_project_pmt.repositories.ProjectRepository;
+import com.iscod.api_project_pmt.repositories.ProjectUserRepository;
 import com.iscod.api_project_pmt.repositories.TaskRepository;
+import com.iscod.api_project_pmt.repositories.UserRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -22,6 +27,8 @@ import java.util.List;
 public class ProjectController {
     private final ProjectRepository projectRepository;
     private final TaskRepository taskRepository;
+    private final UserRepository userRepository;
+    private final ProjectUserRepository projectUserRepository;
     private final ProjectMapper projectMapper;
     private final SimpleProjectMapper simpleProjectMapper;
     private final TaskMapper taskMapper;
@@ -46,8 +53,17 @@ public class ProjectController {
 
     @PostMapping
     public ResponseEntity<ProjectDto> CreateProject(@RequestBody ProjectRequest projectRequest, UriComponentsBuilder uriBuilder) {
+        User user = userRepository.findByName(projectRequest.getUsername()).orElse(null);
+        if(user == null) {
+            return ResponseEntity.notFound().build();
+        }
+
         Project project = projectMapper.toProject(projectRequest);
-        projectRepository.save(project);
+        project = projectRepository.save(project);
+
+        ProjectUser projectUser = new ProjectUser(project, user, UserRole.ADMIN);
+        projectUserRepository.save(projectUser);
+
         ProjectDto projectDto = projectMapper.toDto(project);
         var uri = uriBuilder.path("/projects/{id}").buildAndExpand(projectDto.getId()).toUri();
         return ResponseEntity.created(uri).body(projectDto);

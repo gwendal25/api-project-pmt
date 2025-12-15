@@ -32,6 +32,9 @@ public class Project {
     @OneToMany(mappedBy = "project", cascade = {CascadeType.PERSIST})
     private Set<Task> tasks = new HashSet<Task>();
 
+    @OneToMany(mappedBy = "project")
+    private Set<ProjectUser> projectUsers = new HashSet<>();
+
     public void addTask(Task task) {
         tasks.add(task);
     }

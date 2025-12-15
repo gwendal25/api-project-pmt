@@ -5,6 +5,9 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
+import java.util.HashSet;
+import java.util.Set;
+
 @Getter
 @Setter
 @Builder
@@ -29,4 +32,7 @@ public class User {
     @NotBlank
     @Column(name = "password")
     private String password;
+
+    @OneToMany(mappedBy = "user")
+    private Set<ProjectUser> projectUsers = new HashSet<>();
 }
