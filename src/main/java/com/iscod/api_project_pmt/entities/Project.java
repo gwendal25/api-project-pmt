@@ -29,11 +29,13 @@ public class Project {
     @Column(name = "start_date")
     private Date startDate;
 
+    @Column(name = "tasks")
     @OneToMany(mappedBy = "project", cascade = {CascadeType.PERSIST})
     private Set<Task> tasks = new HashSet<Task>();
 
+    @Column(name = "users")
     @OneToMany(mappedBy = "project")
-    private Set<ProjectUser> projectUsers = new HashSet<>();
+    private Set<ProjectUser> users = new HashSet<>();
 
     public void addTask(Task task) {
         tasks.add(task);

@@ -1,13 +1,13 @@
 package com.iscod.api_project_pmt.controllers;
 
-import com.iscod.api_project_pmt.dtos.SimpleTaskDto;
-import com.iscod.api_project_pmt.dtos.TaskDto;
-import com.iscod.api_project_pmt.dtos.TaskRequest;
+import com.iscod.api_project_pmt.dtos.*;
 import com.iscod.api_project_pmt.entities.Task;
+import com.iscod.api_project_pmt.entities.User;
 import com.iscod.api_project_pmt.mappers.SimpleTaskMapper;
 import com.iscod.api_project_pmt.mappers.TaskMapper;
 import com.iscod.api_project_pmt.repositories.ProjectRepository;
 import com.iscod.api_project_pmt.repositories.TaskRepository;
+import com.iscod.api_project_pmt.repositories.UserRepository;
 import com.iscod.api_project_pmt.services.TaskHistoryEntryService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 public class TaskController {
     private final ProjectRepository projectRepository;
     private final TaskRepository taskRepository;
+    private final UserRepository userRepository;
     private final TaskMapper taskMapper;
     private final SimpleTaskMapper simpleTaskMapper;
     private final TaskHistoryEntryService taskHistoryEntryService;
@@ -51,5 +52,33 @@ public class TaskController {
 
         taskHistoryEntryService.AddTaskHistoryEntryToTask(taskRequest, task);
         return ResponseEntity.ok(taskMapper.toDtoWithHistory(task));
+    }
+
+    @PutMapping("/{id}/assign")
+    public ResponseEntity<TaskUserDto> assignTask(@PathVariable Long id, @RequestBody TaskUserRequest taskUserRequest) {
+        Task task = taskRepository.findById(id).orElse(null);
+        if(task == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        User oldUser = task.getUser();
+        if(oldUser != null) {
+            oldUser.UnassignTask(task);
+            userRepository.save(oldUser);
+        }
+        Long userId = taskUserRequest.getId();
+        if(userId == -1) {
+            return ResponseEntity.ok(new TaskUserDto(userId, ""));
+        }
+        User user = userRepository.findById(taskUserRequest.getId()).orElse(null);
+        if(user == null) {
+            return ResponseEntity.notFound().build();
+        }
+        user.AssignTask(task);
+        userRepository.save(user);
+        task.setUser(user);
+        taskRepository.save(task);
+
+        return ResponseEntity.ok(new TaskUserDto(user.getId(), user.getName()));
     }
 }

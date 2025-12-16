@@ -1,6 +1,7 @@
 package com.iscod.api_project_pmt.dtos;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -20,4 +21,6 @@ public class ProjectDto {
     @JsonFormat(pattern = "yyyy-MM-dd")
     private Date startDate;
     private List<ProjectTaskDto> tasks;
+    @JsonProperty("users")
+    private List<UserDto> users;
 }

@@ -34,5 +34,16 @@ public class User {
     private String password;
 
     @OneToMany(mappedBy = "user")
-    private Set<ProjectUser> projectUsers = new HashSet<>();
+    private Set<ProjectUser> projects = new HashSet<>();
+
+    @OneToMany(mappedBy = "user", cascade = {CascadeType.PERSIST})
+    private Set<Task> tasks = new HashSet<>();
+
+    public void AssignTask(Task task) {
+        tasks.add(task);
+    }
+
+    public void UnassignTask(Task task) {
+        tasks.remove(task);
+    }
 }

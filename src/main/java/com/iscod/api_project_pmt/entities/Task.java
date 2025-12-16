@@ -43,6 +43,10 @@ public class Task {
     @JoinColumn(name="project_id", nullable = false)
     private Project project;
 
+    @ManyToOne
+    @JoinColumn(name="user_id")
+    private User user;
+
     @OneToMany(mappedBy="task", cascade = {CascadeType.PERSIST})
     private Set<TaskHistoryEntry> taskHistoryEntries = new HashSet<>();
 

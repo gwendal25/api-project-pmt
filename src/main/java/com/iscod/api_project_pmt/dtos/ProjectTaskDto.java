@@ -22,4 +22,5 @@ public class ProjectTaskDto {
     private TaskStatus taskStatus;
     @JsonFormat(pattern = "yyyy-MM-dd")
     private Date endDate;
+    private TaskUserDto user;
 }
