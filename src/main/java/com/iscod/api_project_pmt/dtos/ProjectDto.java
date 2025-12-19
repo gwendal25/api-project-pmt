@@ -23,4 +23,11 @@ public class ProjectDto {
     private List<ProjectTaskDto> tasks;
     @JsonProperty("users")
     private List<UserDto> users;
+
+    public ProjectDto(Long id, String name, String description, Date startDate) {
+        this.id = id;
+        this.name = name;
+        this.description = description;
+        this.startDate = startDate;
+    }
 }

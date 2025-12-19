@@ -47,11 +47,26 @@ public class Task {
     @JoinColumn(name="user_id")
     private User user;
 
+    @ManyToMany(mappedBy="notificationTasks")
+    private Set<User> notificationUsers;
+
     @OneToMany(mappedBy="task", cascade = {CascadeType.PERSIST})
     private Set<TaskHistoryEntry> taskHistoryEntries = new HashSet<>();
 
     public void addTaskHistoryEntry(TaskHistoryEntry taskHistoryEntry) {
         taskHistoryEntries.add(taskHistoryEntry);
+    }
+
+    public void addNotificationUser(User user) {
+        notificationUsers.add(user);
+    }
+
+    public void removeNotificationUser(User user) {
+        notificationUsers.remove(user);
+    }
+
+    public boolean hasNotificationUser(User user) {
+        return notificationUsers.contains(user);
     }
 
     public Task(String name, String description, Date endDate, TaskPriority taskPriority, TaskStatus taskStatus) {

@@ -23,4 +23,15 @@ public class ProjectTaskDto {
     @JsonFormat(pattern = "yyyy-MM-dd")
     private Date endDate;
     private TaskUserDto user;
+    private boolean isNotified;
+
+    public ProjectTaskDto(Long id, String name, String description, TaskPriority taskPriority, TaskStatus taskStatus, Date endDate, TaskUserDto user) {
+        this.id = id;
+        this.name = name;
+        this.description = description;
+        this.taskPriority = taskPriority;
+        this.taskStatus = taskStatus;
+        this.endDate = endDate;
+        this.user = user;
+    }
 }

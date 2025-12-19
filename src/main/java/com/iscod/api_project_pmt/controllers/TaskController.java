@@ -81,4 +81,31 @@ public class TaskController {
 
         return ResponseEntity.ok(new TaskUserDto(user.getId(), user.getName()));
     }
+
+    @PutMapping("/{id}/set-assign-notifications")
+    public ResponseEntity<TaskSetNotificationDto> setAssignNotifications(@PathVariable Long id, @RequestBody TaskNotificationRequest taskNotificationRequest, @RequestHeader("Authorization") String userIdStr) {
+        Task task = taskRepository.findById(id).orElse(null);
+        if(task == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        Long userId = Long.valueOf(userIdStr);
+        User user = userRepository.findById(userId).orElse(null);
+        if(user == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        if(taskNotificationRequest.getIsNotified()){
+            task.addNotificationUser(user);
+            user.addNotificationTask(task);
+        }
+        else {
+            task.removeNotificationUser(user);
+            user.removeNotificationTask(task);
+        }
+        taskRepository.save(task);
+        userRepository.save(user);
+
+        return ResponseEntity.ok(new TaskSetNotificationDto(taskNotificationRequest.getIsNotified()));
+    }
 }

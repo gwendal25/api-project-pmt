@@ -42,17 +42,23 @@ public class ProjectController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ProjectDto> getProject(@PathVariable Long id) {
+    public ResponseEntity<ProjectDto> getProject(@PathVariable Long id, @RequestHeader("Authorization") String userIdStr) {
         Project project = projectRepository.findById(id).orElse(null);
         if(project == null) {
             return ResponseEntity.notFound().build();
         }
 
-        return ResponseEntity.ok(projectMapper.toDto(project));
+        Long userId = Long.valueOf(userIdStr);
+        User user = userRepository.findById(userId).orElse(null);
+        if(user == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        return ResponseEntity.ok(projectMapper.toDto(project, user));
     }
 
     @PostMapping
-    public ResponseEntity<ProjectDto> CreateProject(@RequestBody ProjectRequest projectRequest, UriComponentsBuilder uriBuilder) {
+    public ResponseEntity<SimpleProjectDto> CreateProject(@RequestBody ProjectRequest projectRequest, UriComponentsBuilder uriBuilder) {
         User user = userRepository.findByName(projectRequest.getUsername()).orElse(null);
         if(user == null) {
             return ResponseEntity.notFound().build();
@@ -64,7 +70,7 @@ public class ProjectController {
         ProjectUser projectUser = new ProjectUser(project, user, UserRole.ADMIN);
         projectUserRepository.save(projectUser);
 
-        ProjectDto projectDto = projectMapper.toDto(project);
+        SimpleProjectDto projectDto = simpleProjectMapper.toDto(project);
         var uri = uriBuilder.path("/projects/{id}").buildAndExpand(projectDto.getId()).toUri();
         return ResponseEntity.created(uri).body(projectDto);
     }
@@ -88,7 +94,7 @@ public class ProjectController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ProjectDto> UpdateProject(@PathVariable Long id, @RequestBody ProjectRequest projectRequest) {
+    public ResponseEntity<SimpleProjectDto> UpdateProject(@PathVariable Long id, @RequestBody ProjectRequest projectRequest) {
         Project project = projectRepository.findById(id).orElse(null);
 
         if(project == null) {
@@ -97,6 +103,6 @@ public class ProjectController {
 
         projectMapper.update(projectRequest, project);
         projectRepository.save(project);
-        return ResponseEntity.ok(projectMapper.toDto(project));
+        return ResponseEntity.ok(simpleProjectMapper.toDto(project));
     }
 }

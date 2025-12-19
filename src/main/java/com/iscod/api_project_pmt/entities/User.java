@@ -39,11 +39,26 @@ public class User {
     @OneToMany(mappedBy = "user", cascade = {CascadeType.PERSIST})
     private Set<Task> tasks = new HashSet<>();
 
+    @ManyToMany
+    @JoinTable(
+            name="tasks_notifications",
+            joinColumns = @JoinColumn(name="user_id"),
+            inverseJoinColumns = @JoinColumn(name="task_id"))
+    private Set<Task> notificationTasks;
+
     public void AssignTask(Task task) {
         tasks.add(task);
     }
 
     public void UnassignTask(Task task) {
         tasks.remove(task);
+    }
+
+    public void addNotificationTask(Task task) {
+        notificationTasks.add(task);
+    }
+
+    public void removeNotificationTask(Task task) {
+        notificationTasks.remove(task);
     }
 }
