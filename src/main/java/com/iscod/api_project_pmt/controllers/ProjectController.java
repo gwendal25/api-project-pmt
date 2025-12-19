@@ -8,6 +8,7 @@ import com.iscod.api_project_pmt.entities.User;
 import com.iscod.api_project_pmt.enums.UserRole;
 import com.iscod.api_project_pmt.mappers.ProjectMapper;
 import com.iscod.api_project_pmt.mappers.SimpleProjectMapper;
+import com.iscod.api_project_pmt.mappers.SimpleTaskMapper;
 import com.iscod.api_project_pmt.mappers.TaskMapper;
 import com.iscod.api_project_pmt.repositories.ProjectRepository;
 import com.iscod.api_project_pmt.repositories.ProjectUserRepository;
@@ -32,6 +33,7 @@ public class ProjectController {
     private final ProjectMapper projectMapper;
     private final SimpleProjectMapper simpleProjectMapper;
     private final TaskMapper taskMapper;
+    private final SimpleTaskMapper simpleTaskMapper;
 
     @GetMapping
     public List<SimpleProjectDto> getAllProjects() {
@@ -58,8 +60,9 @@ public class ProjectController {
     }
 
     @PostMapping
-    public ResponseEntity<SimpleProjectDto> CreateProject(@RequestBody ProjectRequest projectRequest, UriComponentsBuilder uriBuilder) {
-        User user = userRepository.findByName(projectRequest.getUsername()).orElse(null);
+    public ResponseEntity<SimpleProjectDto> CreateProject(@RequestBody ProjectRequest projectRequest, @RequestHeader("Authorization") String userIdStr, UriComponentsBuilder uriBuilder) {
+        Long userId = Long.valueOf(userIdStr);
+        User user = userRepository.findById(userId).orElse(null);
         if(user == null) {
             return ResponseEntity.notFound().build();
         }
@@ -76,7 +79,7 @@ public class ProjectController {
     }
 
     @PostMapping("/{id}/tasks")
-    public ResponseEntity<TaskDto> CreateTask(@PathVariable Long id, @RequestBody TaskRequest taskRequest, UriComponentsBuilder uriBuilder) {
+    public ResponseEntity<SimpleTaskDto> CreateTask(@PathVariable Long id, @RequestBody TaskRequest taskRequest, UriComponentsBuilder uriBuilder) {
         Project project = projectRepository.findById(id).orElse(null);
 
         if(project == null) {
@@ -88,7 +91,7 @@ public class ProjectController {
         project.addTask(task);
         taskRepository.save(task);
         projectRepository.save(project);
-        TaskDto taskDto = taskMapper.toDto(task);
+        SimpleTaskDto taskDto = simpleTaskMapper.toDto(task);
         var uri = uriBuilder.path("/tasks/{id}").buildAndExpand(taskDto.getId()).toUri();
         return ResponseEntity.created(uri).body(taskDto);
     }

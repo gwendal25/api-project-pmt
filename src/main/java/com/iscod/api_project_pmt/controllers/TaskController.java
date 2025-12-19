@@ -3,6 +3,7 @@ package com.iscod.api_project_pmt.controllers;
 import com.iscod.api_project_pmt.dtos.*;
 import com.iscod.api_project_pmt.entities.Task;
 import com.iscod.api_project_pmt.entities.User;
+import com.iscod.api_project_pmt.mappers.ProjectMapper;
 import com.iscod.api_project_pmt.mappers.SimpleTaskMapper;
 import com.iscod.api_project_pmt.mappers.TaskMapper;
 import com.iscod.api_project_pmt.repositories.ProjectRepository;
@@ -23,6 +24,7 @@ public class TaskController {
     private final UserRepository userRepository;
     private final TaskMapper taskMapper;
     private final SimpleTaskMapper simpleTaskMapper;
+    private final ProjectMapper projectMapper;
     private final TaskHistoryEntryService taskHistoryEntryService;
 
     @GetMapping("/{id}")
@@ -44,18 +46,18 @@ public class TaskController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<TaskDto> updateTask(@PathVariable Long id, @RequestBody TaskRequest taskRequest) {
+    public ResponseEntity<SimpleTaskDto> updateTask(@PathVariable Long id, @RequestBody TaskRequest taskRequest) {
         Task task = taskRepository.findById(id).orElse(null);
         if(task == null) {
             return ResponseEntity.notFound().build();
         }
 
         taskHistoryEntryService.AddTaskHistoryEntryToTask(taskRequest, task);
-        return ResponseEntity.ok(taskMapper.toDtoWithHistory(task));
+        return ResponseEntity.ok(simpleTaskMapper.toDto(task));
     }
 
     @PutMapping("/{id}/assign")
-    public ResponseEntity<TaskUserDto> assignTask(@PathVariable Long id, @RequestBody TaskUserRequest taskUserRequest) {
+    public ResponseEntity<ProjectTaskDto> assignTask(@PathVariable Long id, @RequestBody TaskUserRequest taskUserRequest) {
         Task task = taskRepository.findById(id).orElse(null);
         if(task == null) {
             return ResponseEntity.notFound().build();
@@ -66,20 +68,20 @@ public class TaskController {
             oldUser.UnassignTask(task);
             userRepository.save(oldUser);
         }
-        Long userId = taskUserRequest.getId();
+        Long userId = taskUserRequest.getUserId();
         if(userId == -1) {
-            return ResponseEntity.ok(new TaskUserDto(userId, ""));
+            return ResponseEntity.ok(projectMapper.toProjectTaskDto(task, new User(-1L, "")));
         }
-        User user = userRepository.findById(taskUserRequest.getId()).orElse(null);
+        User user = userRepository.findById(userId).orElse(null);
         if(user == null) {
             return ResponseEntity.notFound().build();
         }
         user.AssignTask(task);
-        userRepository.save(user);
+        user = userRepository.save(user);
         task.setUser(user);
-        taskRepository.save(task);
+        task = taskRepository.save(task);
 
-        return ResponseEntity.ok(new TaskUserDto(user.getId(), user.getName()));
+        return ResponseEntity.ok(projectMapper.toProjectTaskDto(task, user));
     }
 
     @PutMapping("/{id}/set-assign-notifications")

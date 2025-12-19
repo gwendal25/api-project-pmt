@@ -46,6 +46,11 @@ public class User {
             inverseJoinColumns = @JoinColumn(name="task_id"))
     private Set<Task> notificationTasks;
 
+    public User(Long id, String name) {
+        this.id = id;
+        this.name = name;
+    }
+
     public void AssignTask(Task task) {
         tasks.add(task);
     }
