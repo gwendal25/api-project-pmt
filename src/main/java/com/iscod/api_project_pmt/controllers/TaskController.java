@@ -71,10 +71,18 @@ public class TaskController {
         }
         Long userId = taskUserRequest.getUserId();
         if(userId == -1) {
+            if(oldUser != null) {
+                task.setUser(null);
+                task = taskRepository.save(task);
+            }
             return ResponseEntity.ok(projectMapper.toProjectTaskDto(task, new User(-1L, "")));
         }
         User user = userRepository.findById(userId).orElse(null);
         if(user == null) {
+            if(oldUser != null) {
+                task.setUser(null);
+                task = taskRepository.save(task);
+            }
             return ResponseEntity.notFound().build();
         }
         user.AssignTask(task);
