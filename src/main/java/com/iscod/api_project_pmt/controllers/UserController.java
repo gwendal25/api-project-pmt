@@ -1,8 +1,8 @@
 package com.iscod.api_project_pmt.controllers;
 
-import com.iscod.api_project_pmt.dtos.UserDto;
-import com.iscod.api_project_pmt.dtos.UserLoginDto;
-import com.iscod.api_project_pmt.dtos.UserRequest;
+import com.iscod.api_project_pmt.dtos.user.UserDto;
+import com.iscod.api_project_pmt.dtos.user.UserLoginRequest;
+import com.iscod.api_project_pmt.dtos.user.UserRequest;
 import com.iscod.api_project_pmt.entities.User;
 import com.iscod.api_project_pmt.mappers.UserMapper;
 import com.iscod.api_project_pmt.repositories.UserRepository;
@@ -59,13 +59,13 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<UserDto> login(@Valid @RequestBody UserLoginDto userLoginDto) {
-        User user = userRepository.findByEmail(userLoginDto.getEmail()).orElse(null);
+    public ResponseEntity<UserDto> login(@Valid @RequestBody UserLoginRequest userLoginRequest) {
+        User user = userRepository.findByEmail(userLoginRequest.getEmail()).orElse(null);
         if(user == null) {
             return ResponseEntity.badRequest().build();
         }
 
-        if(!userLoginDto.getPassword().equals(user.getPassword())) {
+        if(!userLoginRequest.getPassword().equals(user.getPassword())) {
             return ResponseEntity.badRequest().build();
         }
 

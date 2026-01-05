@@ -1,6 +1,8 @@
 package com.iscod.api_project_pmt.mappers;
 
-import com.iscod.api_project_pmt.dtos.*;
+import com.iscod.api_project_pmt.dtos.task.TaskDto;
+import com.iscod.api_project_pmt.dtos.task.TaskHistoryEntryDto;
+import com.iscod.api_project_pmt.dtos.task.TaskRequest;
 import com.iscod.api_project_pmt.entities.Task;
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingTarget;

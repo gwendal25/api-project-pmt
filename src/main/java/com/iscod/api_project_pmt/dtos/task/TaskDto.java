@@ -1,4 +1,4 @@
-package com.iscod.api_project_pmt.dtos;
+package com.iscod.api_project_pmt.dtos.task;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.iscod.api_project_pmt.enums.TaskPriority;

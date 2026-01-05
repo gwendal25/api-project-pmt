@@ -1,9 +1,9 @@
 package com.iscod.api_project_pmt.mappers;
 
-import com.iscod.api_project_pmt.dtos.ProjectDto;
-import com.iscod.api_project_pmt.dtos.ProjectRequest;
-import com.iscod.api_project_pmt.dtos.ProjectTaskDto;
-import com.iscod.api_project_pmt.dtos.UserDto;
+import com.iscod.api_project_pmt.dtos.project.ProjectDto;
+import com.iscod.api_project_pmt.dtos.project.ProjectRequest;
+import com.iscod.api_project_pmt.dtos.task.ProjectTaskDto;
+import com.iscod.api_project_pmt.dtos.user.UserDto;
 import com.iscod.api_project_pmt.entities.Project;
 import com.iscod.api_project_pmt.entities.ProjectUser;
 import com.iscod.api_project_pmt.entities.Task;

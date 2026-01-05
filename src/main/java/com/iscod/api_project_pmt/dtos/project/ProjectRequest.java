@@ -1,4 +1,4 @@
-package com.iscod.api_project_pmt.dtos;
+package com.iscod.api_project_pmt.dtos.project;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Getter;

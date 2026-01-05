@@ -1,4 +1,4 @@
-package com.iscod.api_project_pmt.dtos;
+package com.iscod.api_project_pmt.dtos.task;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.iscod.api_project_pmt.enums.TaskPriority;
@@ -14,7 +14,7 @@ import java.util.Date;
 @NoArgsConstructor
 @Setter
 @Getter
-public class ProjectTaskDto {
+public class SimpleTaskDto {
     private Long id;
     private String name;
     private String description;
@@ -22,16 +22,4 @@ public class ProjectTaskDto {
     private TaskStatus taskStatus;
     @JsonFormat(pattern = "yyyy-MM-dd")
     private Date endDate;
-    private TaskUserDto user;
-    private boolean isNotified;
-
-    public ProjectTaskDto(Long id, String name, String description, TaskPriority taskPriority, TaskStatus taskStatus, Date endDate, TaskUserDto user) {
-        this.id = id;
-        this.name = name;
-        this.description = description;
-        this.taskPriority = taskPriority;
-        this.taskStatus = taskStatus;
-        this.endDate = endDate;
-        this.user = user;
-    }
 }

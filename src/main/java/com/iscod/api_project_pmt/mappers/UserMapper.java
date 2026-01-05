@@ -1,8 +1,8 @@
 package com.iscod.api_project_pmt.mappers;
 
-import com.iscod.api_project_pmt.dtos.TaskUserDto;
-import com.iscod.api_project_pmt.dtos.UserDto;
-import com.iscod.api_project_pmt.dtos.UserRequest;
+import com.iscod.api_project_pmt.dtos.user.TaskUserDto;
+import com.iscod.api_project_pmt.dtos.user.UserDto;
+import com.iscod.api_project_pmt.dtos.user.UserRequest;
 import com.iscod.api_project_pmt.entities.User;
 import org.mapstruct.Mapper;
 

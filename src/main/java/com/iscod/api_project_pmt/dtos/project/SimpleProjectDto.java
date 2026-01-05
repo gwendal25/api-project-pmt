@@ -1,8 +1,6 @@
-package com.iscod.api_project_pmt.dtos;
+package com.iscod.api_project_pmt.dtos.project;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.iscod.api_project_pmt.enums.TaskPriority;
-import com.iscod.api_project_pmt.enums.TaskStatus;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -14,14 +12,10 @@ import java.util.Date;
 @NoArgsConstructor
 @Setter
 @Getter
-public class TaskHistoryEntryDto {
+public class SimpleProjectDto {
     private Long id;
     private String name;
     private String description;
-    private TaskPriority taskPriority;
-    private TaskStatus taskStatus;
     @JsonFormat(pattern = "yyyy-MM-dd")
-    private Date endDate;
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    private Date editDate;
+    private Date startDate;
 }

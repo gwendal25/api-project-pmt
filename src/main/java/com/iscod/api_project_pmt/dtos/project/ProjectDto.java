@@ -1,7 +1,9 @@
-package com.iscod.api_project_pmt.dtos;
+package com.iscod.api_project_pmt.dtos.project;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.iscod.api_project_pmt.dtos.task.ProjectTaskDto;
+import com.iscod.api_project_pmt.dtos.user.UserDto;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

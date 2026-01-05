@@ -1,6 +1,10 @@
 package com.iscod.api_project_pmt.controllers;
 
-import com.iscod.api_project_pmt.dtos.*;
+import com.iscod.api_project_pmt.dtos.project.ProjectDto;
+import com.iscod.api_project_pmt.dtos.project.ProjectRequest;
+import com.iscod.api_project_pmt.dtos.project.SimpleProjectDto;
+import com.iscod.api_project_pmt.dtos.task.SimpleTaskDto;
+import com.iscod.api_project_pmt.dtos.task.TaskRequest;
 import com.iscod.api_project_pmt.entities.Project;
 import com.iscod.api_project_pmt.entities.ProjectUser;
 import com.iscod.api_project_pmt.entities.Task;

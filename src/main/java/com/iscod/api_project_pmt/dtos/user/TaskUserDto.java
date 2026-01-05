@@ -1,4 +1,4 @@
-package com.iscod.api_project_pmt.dtos;
+package com.iscod.api_project_pmt.dtos.user;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

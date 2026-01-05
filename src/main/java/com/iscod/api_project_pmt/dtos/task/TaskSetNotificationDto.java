@@ -1,4 +1,4 @@
-package com.iscod.api_project_pmt.dtos;
+package com.iscod.api_project_pmt.dtos.task;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -7,10 +7,8 @@ import lombok.Setter;
 
 @AllArgsConstructor
 @NoArgsConstructor
-@Setter
 @Getter
-public class UserDto {
-    private Long id;
-    private String name;
-    private String email;
+@Setter
+public class TaskSetNotificationDto {
+    private boolean hasNotifications;
 }

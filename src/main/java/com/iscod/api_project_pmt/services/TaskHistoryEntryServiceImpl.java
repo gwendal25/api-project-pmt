@@ -1,6 +1,6 @@
 package com.iscod.api_project_pmt.services;
 
-import com.iscod.api_project_pmt.dtos.TaskRequest;
+import com.iscod.api_project_pmt.dtos.task.TaskRequest;
 import com.iscod.api_project_pmt.entities.Task;
 import com.iscod.api_project_pmt.entities.TaskHistoryEntry;
 import com.iscod.api_project_pmt.mappers.TaskMapper;
