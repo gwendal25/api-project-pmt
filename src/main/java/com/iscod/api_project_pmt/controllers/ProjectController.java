@@ -3,6 +3,9 @@ package com.iscod.api_project_pmt.controllers;
 import com.iscod.api_project_pmt.dtos.project.ProjectDto;
 import com.iscod.api_project_pmt.dtos.project.ProjectRequest;
 import com.iscod.api_project_pmt.dtos.project.SimpleProjectDto;
+import com.iscod.api_project_pmt.dtos.projectuser.ProjectUserDto;
+import com.iscod.api_project_pmt.dtos.projectuser.ProjectUserIdRequest;
+import com.iscod.api_project_pmt.dtos.projectuser.ProjectUserRequest;
 import com.iscod.api_project_pmt.dtos.task.SimpleTaskDto;
 import com.iscod.api_project_pmt.dtos.task.TaskRequest;
 import com.iscod.api_project_pmt.entities.Project;
@@ -10,10 +13,7 @@ import com.iscod.api_project_pmt.entities.ProjectUser;
 import com.iscod.api_project_pmt.entities.Task;
 import com.iscod.api_project_pmt.entities.User;
 import com.iscod.api_project_pmt.enums.UserRole;
-import com.iscod.api_project_pmt.mappers.ProjectMapper;
-import com.iscod.api_project_pmt.mappers.SimpleProjectMapper;
-import com.iscod.api_project_pmt.mappers.SimpleTaskMapper;
-import com.iscod.api_project_pmt.mappers.TaskMapper;
+import com.iscod.api_project_pmt.mappers.*;
 import com.iscod.api_project_pmt.repositories.ProjectRepository;
 import com.iscod.api_project_pmt.repositories.ProjectUserRepository;
 import com.iscod.api_project_pmt.repositories.TaskRepository;
@@ -36,6 +36,7 @@ public class ProjectController {
     private final ProjectUserRepository projectUserRepository;
     private final ProjectMapper projectMapper;
     private final SimpleProjectMapper simpleProjectMapper;
+    private final ProjectUserMapper projectUserMapper;
     private final TaskMapper taskMapper;
     private final SimpleTaskMapper simpleTaskMapper;
 
@@ -111,5 +112,42 @@ public class ProjectController {
         projectMapper.update(projectRequest, project);
         projectRepository.save(project);
         return ResponseEntity.ok(simpleProjectMapper.toDto(project));
+    }
+
+    @PutMapping("/{id}/add-user")
+    public ResponseEntity<ProjectUserDto> AddUserToProject(@PathVariable Long id, @RequestBody ProjectUserRequest projectUserRequest){
+        Project project = projectRepository.findById(id).orElse(null);
+        if(project == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        User user = userRepository.findByEmail(projectUserRequest.getEmail()).orElse(null);
+        if(user == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        ProjectUser projectUser = new ProjectUser(project, user, projectUserRequest.getUserRole());
+        projectUserRepository.save(projectUser);
+
+        return ResponseEntity.ok(projectUserMapper.toDto(projectUser));
+    }
+
+    @PutMapping("/{id}/change-user-role")
+    public ResponseEntity<ProjectUserDto> ChangeUserRole(@PathVariable Long id, @RequestBody ProjectUserIdRequest projectUserIdRequest) {
+        Project project = projectRepository.findById(id).orElse(null);
+        if(project == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        User user = userRepository.findById(projectUserIdRequest.getUserId()).orElse(null);
+        if(user == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        ProjectUser projectUser = projectUserRepository.findByProjectAndUser(project, user).orElse(null);
+        projectUser.setRole(projectUserIdRequest.getUserRole());
+        projectUserRepository.save(projectUser);
+
+        return ResponseEntity.ok(projectUserMapper.toDto(projectUser));
     }
 }
