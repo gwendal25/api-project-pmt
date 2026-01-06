@@ -2,6 +2,7 @@ package com.iscod.api_project_pmt.controllers;
 
 import com.iscod.api_project_pmt.dtos.project.ProjectDto;
 import com.iscod.api_project_pmt.dtos.project.ProjectRequest;
+import com.iscod.api_project_pmt.dtos.project.ProjectUserRoleDto;
 import com.iscod.api_project_pmt.dtos.project.SimpleProjectDto;
 import com.iscod.api_project_pmt.dtos.projectuser.ProjectUserDto;
 import com.iscod.api_project_pmt.dtos.projectuser.ProjectUserIdRequest;
@@ -37,6 +38,7 @@ public class ProjectController {
     private final ProjectMapper projectMapper;
     private final SimpleProjectMapper simpleProjectMapper;
     private final ProjectUserMapper projectUserMapper;
+    private final ProjectUserRoleMapper projectUserRoleMapper;
     private final TaskMapper taskMapper;
     private final SimpleTaskMapper simpleTaskMapper;
 
@@ -62,6 +64,16 @@ public class ProjectController {
         }
 
         return ResponseEntity.ok(projectMapper.toDto(project, user));
+    }
+
+    @GetMapping("/{id}/user-roles")
+    public ResponseEntity<ProjectUserRoleDto> getProjectWithUserRoles(@PathVariable Long id) {
+        Project project = projectRepository.findById(id).orElse(null);
+        if(project == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        return ResponseEntity.ok(projectUserRoleMapper.toDto(project));
     }
 
     @PostMapping
