@@ -73,7 +73,7 @@ public class ProjectController {
             return ResponseEntity.notFound().build();
         }
 
-        return ResponseEntity.ok(projectUserRoleMapper.toDto(project));
+        return ResponseEntity.ok(projectUserRoleMapper.toUserRoleDto(project));
     }
 
     @PostMapping

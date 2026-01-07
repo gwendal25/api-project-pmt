@@ -10,7 +10,7 @@ import java.util.List;
 
 @Mapper(componentModel = "spring")
 public abstract class ProjectUserRoleMapper {
-    public ProjectUserRoleDto toDto(Project project) {
+    public ProjectUserRoleDto toUserRoleDto(Project project) {
         ProjectUserRoleDto projectUserRoleDto = new ProjectUserRoleDto(project.getId(), project.getName(), project.getDescription(), project.getStartDate());
         List<UserRoleDto> users = new ArrayList<>(project.getUsers().stream()
                 .map(projectUser -> new UserRoleDto(projectUser.getUser().getId(), projectUser.getUser().getName(), projectUser.getUser().getEmail(), projectUser.getRole()))
