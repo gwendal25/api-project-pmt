@@ -42,6 +42,11 @@ public class ProjectController {
     private final TaskMapper taskMapper;
     private final SimpleTaskMapper simpleTaskMapper;
 
+    /**
+     * Cette méthode renvoie la liste de tous les projets dans la base de données
+     * À utiliser pour debugger l'application
+     * @return une liste de projets simplifiés avec id, nom, description et date de début de chaque projet
+     */
     @GetMapping
     public List<SimpleProjectDto> getAllProjects() {
         return projectRepository.findAll()
@@ -50,6 +55,13 @@ public class ProjectController {
                 .toList();
     }
 
+    /**
+     * Cette méthode permet de récupérer les informations d'un projet via son id
+     * Le projet contient id, nom, description, date de début, liste des tâches et liste des utilisateurs.
+     * @param id Id du projet
+     * @param userIdStr Un faux token d'authorization qui est l'id de l'utilisateur
+     * @return Les informations du projet
+     */
     @GetMapping("/{id}")
     public ResponseEntity<ProjectDto> getProject(@PathVariable Long id, @RequestHeader("Authorization") String userIdStr) {
         Project project = projectRepository.findById(id).orElse(null);
@@ -66,6 +78,12 @@ public class ProjectController {
         return ResponseEntity.ok(projectMapper.toDto(project, user));
     }
 
+    /**
+     * Récupère les informations minimales d'un projet ainsi que les utilisateurs associés et leurs rôles
+     * Le projet contient id, nom, description, date de début et liste des utilisateurs
+     * @param id Id du projet
+     * @return les infos du projet avec les rôles utilisateurs
+     */
     @GetMapping("/{id}/user-roles")
     public ResponseEntity<ProjectUserRoleDto> getProjectWithUserRoles(@PathVariable Long id) {
         Project project = projectRepository.findById(id).orElse(null);
@@ -76,6 +94,15 @@ public class ProjectController {
         return ResponseEntity.ok(projectUserRoleMapper.toUserRoleDto(project));
     }
 
+    /**
+     * Créer un nouveau projet et l'enregistre dans la base de données.
+     * L'utilisateur qui crée le projet est associé au projet en tant qu'administrateur du projet
+     * Les infos du projet sont nom, description et date de début.
+     * @param projectRequest Les informations du projet à créer
+     * @param userIdStr Un faux token d'authorisation qui est l'id de l'utilisateur qui crée le projet
+     * @param uriBuilder Le builder de l'url du projet
+     * @return Les informations simplifiées du projet avec uniquement id, nom, description et date de début
+     */
     @PostMapping
     public ResponseEntity<SimpleProjectDto> CreateProject(@RequestBody ProjectRequest projectRequest, @RequestHeader("Authorization") String userIdStr, UriComponentsBuilder uriBuilder) {
         Long userId = Long.valueOf(userIdStr);
@@ -95,6 +122,14 @@ public class ProjectController {
         return ResponseEntity.created(uri).body(projectDto);
     }
 
+    /**
+     * Créer une nouvelle tâche et l'associe à un projet
+     * Les infos de la tâche sont nom, description, priorité, status et date de fin
+     * @param id Id du projet auquel ajouter une nouvelle tâche
+     * @param taskRequest Les informations pour créer la tâche
+     * @param uriBuilder Le builder de l'url de la tâche
+     * @return Les infos de la tâche avec id, nom, description, priorité, status et date de fin
+     */
     @PostMapping("/{id}/tasks")
     public ResponseEntity<SimpleTaskDto> CreateTask(@PathVariable Long id, @RequestBody TaskRequest taskRequest, UriComponentsBuilder uriBuilder) {
         Project project = projectRepository.findById(id).orElse(null);
@@ -113,6 +148,13 @@ public class ProjectController {
         return ResponseEntity.created(uri).body(taskDto);
     }
 
+    /**
+     * Met à jour les informations du projet
+     * Les infos du projet sont nom, description et date de début
+     * @param id Id du projet à modifier
+     * @param projectRequest Les informations de mise à jour du projet
+     * @return Les informations modifiées du projet avec id, nom, description et date de début
+     */
     @PutMapping("/{id}")
     public ResponseEntity<SimpleProjectDto> UpdateProject(@PathVariable Long id, @RequestBody ProjectRequest projectRequest) {
         Project project = projectRepository.findById(id).orElse(null);
@@ -126,6 +168,12 @@ public class ProjectController {
         return ResponseEntity.ok(simpleProjectMapper.toDto(project));
     }
 
+    /**
+     * Ajoute un utilisateur à un projet en lui donnant un rôle sur ce projet
+     * @param id Id du projet auquel associé un nouvel utilisateur
+     * @param projectUserRequest les informations de l'utilisateur à ajouter au projet avec son email et son rôle sur le projet
+     * @return Une version simplifiée de la relation entre l'utilisateur et le projet
+     */
     @PutMapping("/{id}/add-user")
     public ResponseEntity<ProjectUserDto> AddUserToProject(@PathVariable Long id, @RequestBody ProjectUserRequest projectUserRequest){
         Project project = projectRepository.findById(id).orElse(null);
@@ -144,6 +192,12 @@ public class ProjectController {
         return ResponseEntity.ok(projectUserMapper.toDto(projectUser));
     }
 
+    /**
+     * Change le rôle de l'utilisateur associé à un projet
+     * @param id Id du projet
+     * @param projectUserIdRequest Les infos de mise à jour de la relation entre l'utilisateur et le projet avec l'id et le nouveau rôle de l'utilisateur
+     * @return Une version simplifiée de la relation entre l'utilisateur et le projet
+     */
     @PutMapping("/{id}/change-user-role")
     public ResponseEntity<ProjectUserDto> ChangeUserRole(@PathVariable Long id, @RequestBody ProjectUserIdRequest projectUserIdRequest) {
         Project project = projectRepository.findById(id).orElse(null);
