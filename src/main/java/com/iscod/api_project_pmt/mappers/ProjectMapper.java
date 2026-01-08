@@ -8,6 +8,7 @@ import com.iscod.api_project_pmt.entities.Project;
 import com.iscod.api_project_pmt.entities.ProjectUser;
 import com.iscod.api_project_pmt.entities.Task;
 import com.iscod.api_project_pmt.entities.User;
+import com.iscod.api_project_pmt.enums.UserRole;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
@@ -25,6 +26,12 @@ public abstract class ProjectMapper {
 
     public ProjectDto toDto(Project project, User user) {
         ProjectDto projectDto = new ProjectDto(project.getId(), project.getName(), project.getDescription(), project.getStartDate());
+        UserRole userRole = project.getUsers().stream()
+                .filter(projectUser -> projectUser.getUser().getId().equals(user.getId()))
+                .map(ProjectUser::getRole)
+                .toList()
+                .getFirst();
+        projectDto.setUserRole(userRole);
         List<UserDto> users = new ArrayList<>(project.getUsers().stream()
                 .map(projectUser -> userMapper.toDto(projectUser.getUser()))
                 .toList());
