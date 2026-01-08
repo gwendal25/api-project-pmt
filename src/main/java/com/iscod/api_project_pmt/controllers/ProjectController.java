@@ -1,9 +1,6 @@
 package com.iscod.api_project_pmt.controllers;
 
-import com.iscod.api_project_pmt.dtos.project.ProjectDto;
-import com.iscod.api_project_pmt.dtos.project.ProjectRequest;
-import com.iscod.api_project_pmt.dtos.project.ProjectUserRoleDto;
-import com.iscod.api_project_pmt.dtos.project.SimpleProjectDto;
+import com.iscod.api_project_pmt.dtos.project.*;
 import com.iscod.api_project_pmt.dtos.projectuser.ProjectUserDto;
 import com.iscod.api_project_pmt.dtos.projectuser.ProjectUserIdRequest;
 import com.iscod.api_project_pmt.dtos.projectuser.ProjectUserRequest;
@@ -41,6 +38,7 @@ public class ProjectController {
     private final ProjectUserRoleMapper projectUserRoleMapper;
     private final TaskMapper taskMapper;
     private final SimpleTaskMapper simpleTaskMapper;
+    private final SimpleProjectWithUserRolesMapper simpleProjectWithUserRolesMapper;
 
     /**
      * Cette méthode renvoie la liste de tous les projets dans la base de données
@@ -56,20 +54,14 @@ public class ProjectController {
     }
 
     @GetMapping("/all")
-    public ResponseEntity<List<SimpleProjectDto>> getAllProjectsByUser(@RequestHeader("Authorization") String userIdStr) {
+    public ResponseEntity<List<ProjectWithUserRolesDto>> getAllProjectsByUser(@RequestHeader("Authorization") String userIdStr) {
         Long userId = Long.valueOf(userIdStr);
         User user = userRepository.findById(userId).orElse(null);
         if(user == null) {
             return ResponseEntity.notFound().build();
         }
 
-        List<SimpleProjectDto> projects =  user.getProjects()
-                .stream()
-                .map(ProjectUser::getProject)
-                .map(simpleProjectMapper::toDto)
-                .toList();
-
-        return ResponseEntity.ok(projects);
+        return ResponseEntity.ok(simpleProjectWithUserRolesMapper.toDtoList(user));
     }
 
     /**
