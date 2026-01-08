@@ -55,6 +55,23 @@ public class ProjectController {
                 .toList();
     }
 
+    @GetMapping("/all")
+    public ResponseEntity<List<SimpleProjectDto>> getAllProjectsByUser(@RequestHeader("Authorization") String userIdStr) {
+        Long userId = Long.valueOf(userIdStr);
+        User user = userRepository.findById(userId).orElse(null);
+        if(user == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        List<SimpleProjectDto> projects =  user.getProjects()
+                .stream()
+                .map(ProjectUser::getProject)
+                .map(simpleProjectMapper::toDto)
+                .toList();
+
+        return ResponseEntity.ok(projects);
+    }
+
     /**
      * Cette méthode permet de récupérer les informations d'un projet via son id
      * Le projet contient id, nom, description, date de début, liste des tâches et liste des utilisateurs.
