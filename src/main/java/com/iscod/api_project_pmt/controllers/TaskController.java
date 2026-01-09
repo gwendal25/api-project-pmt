@@ -35,6 +35,12 @@ public class TaskController {
     private final ProjectMapper projectMapper;
     private final TaskHistoryEntryService taskHistoryEntryService;
 
+    /**
+     * Cette méthode récupère les données d'une tâche et les renvoie
+     * @param id L'id de la tâche à récupérer
+     * @param userIdStr Un faux token d'authorization qui est l'id de l'utilisateur
+     * @return les données de la tâche avec id, nom, description, priorité, status, date de fin et historique
+     */
     @GetMapping("/{id}")
     public ResponseEntity<TaskDto> getTask(@PathVariable Long id, @RequestHeader("Authorization") String userIdStr) {
         Long userId = Long.valueOf(userIdStr);
@@ -57,6 +63,12 @@ public class TaskController {
         return ResponseEntity.ok(taskMapper.toDtoWithHistory(task));
     }
 
+    /**
+     * Cette méthode renvoie les données d'une tâche sans les entrées d'historique associées
+     * @param id L'id de la tâche à récupérer
+     * @param userIdStr Un faux token d'authorization qui est l'id de l'utilisateur
+     * @return les données de la tâche avec id, nom, description, priorité, status et date de fin
+     */
     @GetMapping("/{id}/no-history")
     public ResponseEntity<SimpleTaskDto> getTaskWithoutHistory(@PathVariable Long id, @RequestHeader("Authorization") String userIdStr) {
         Long userId = Long.valueOf(userIdStr);
@@ -79,6 +91,13 @@ public class TaskController {
         return ResponseEntity.ok(simpleTaskMapper.toDto(task));
     }
 
+    /**
+     * Cette méthode met à jour les informations d'une tâche
+     * @param id L'id de la tâche à mettre à jour
+     * @param taskRequest les données de mise à jour de la tâche avec nom, description, priorité, status et date de fin
+     * @param userIdStr Un faux token d'authorisation qui est l'id de l'utilisateur
+     * @return Les données de la tâche mise à jour avec id, nom, description, priorité, status et date de fin
+     */
     @PutMapping("/{id}")
     public ResponseEntity<SimpleTaskDto> updateTask(@PathVariable Long id, @RequestBody TaskRequest taskRequest, @RequestHeader("Authorization") String userIdStr) {
         Long userId = Long.valueOf(userIdStr);
@@ -107,6 +126,13 @@ public class TaskController {
         return ResponseEntity.ok(simpleTaskMapper.toDto(task));
     }
 
+    /**
+     * Cette méthode assigne une tâche à un utilisateur
+     * @param id l'id de la tâche à assigner
+     * @param taskUserRequest Un objet qui contient l'id de l'user a assigné à la tâche
+     * @param userIdStr Un faux token d'authorisation qui est l'id de l'utilisateur
+     * @return Les données de la tâche avec l'utilisateur assigné
+     */
     @PutMapping("/{id}/assign")
     public ResponseEntity<ProjectTaskDto> assignTask(@PathVariable Long id, @RequestBody TaskUserRequest taskUserRequest, @RequestHeader("Authorization") String userIdStr) {
         Long userId = Long.valueOf(userIdStr);
@@ -166,6 +192,13 @@ public class TaskController {
         return ResponseEntity.ok(projectMapper.toProjectTaskDto(task, newUser));
     }
 
+    /**
+     * Cette méthode active les notifications par mail lorsque la tâche est assigné à un nouvel utilisateur
+     * @param id l'id de la tâche a assigné
+     * @param taskNotificationRequest Un objet qui contient le statut des notifications par mail d'assignation de tâches
+     * @param userIdStr Un faux token d'authorisation qui est l'id de l'utilisateur
+     * @return Le statut de notification par mail lors de l'assignation de la tâche
+     */
     @PutMapping("/{id}/set-assign-notifications")
     public ResponseEntity<TaskSetNotificationDto> setAssignNotifications(@PathVariable Long id, @RequestBody TaskNotificationRequest taskNotificationRequest, @RequestHeader("Authorization") String userIdStr) {
         Long userId = Long.valueOf(userIdStr);
