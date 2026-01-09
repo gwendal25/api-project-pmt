@@ -279,6 +279,7 @@ public class ProjectController {
      * Change le rôle de l'utilisateur associé à un projet
      * @param id Id du projet
      * @param projectUserIdRequest Les infos de mise à jour de la relation entre l'utilisateur et le projet avec l'id et le nouveau rôle de l'utilisateur
+     * @param userIdStr Un faux token d'authorization qui est l'id de l'utilisateur
      * @return Une version simplifiée de la relation entre l'utilisateur et le projet
      */
     @PutMapping("/{id}/change-user-role")
