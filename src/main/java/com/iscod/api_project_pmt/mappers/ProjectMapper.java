@@ -24,14 +24,9 @@ public abstract class ProjectMapper {
     @Autowired
     ProjectTaskMapper projectTaskMapper;
 
-    public ProjectDto toDto(Project project, User user) {
+    public ProjectDto toDto(Project project, User user, UserRole role) {
         ProjectDto projectDto = new ProjectDto(project.getId(), project.getName(), project.getDescription(), project.getStartDate());
-        UserRole userRole = project.getUsers().stream()
-                .filter(projectUser -> projectUser.getUser().getId().equals(user.getId()))
-                .map(ProjectUser::getRole)
-                .toList()
-                .getFirst();
-        projectDto.setUserRole(userRole);
+        projectDto.setUserRole(role);
         List<UserDto> users = new ArrayList<>(project.getUsers().stream()
                 .map(projectUser -> userMapper.toDto(projectUser.getUser()))
                 .toList());

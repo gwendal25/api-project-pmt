@@ -17,8 +17,10 @@ import com.iscod.api_project_pmt.repositories.ProjectUserRepository;
 import com.iscod.api_project_pmt.repositories.TaskRepository;
 import com.iscod.api_project_pmt.repositories.UserRepository;
 import lombok.AllArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.List;
@@ -58,7 +60,7 @@ public class ProjectController {
         Long userId = Long.valueOf(userIdStr);
         User user = userRepository.findById(userId).orElse(null);
         if(user == null) {
-            return ResponseEntity.notFound().build();
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied : You need to log in in order to access your list of projects");
         }
 
         return ResponseEntity.ok(simpleProjectWithUserRolesMapper.toDtoList(user));
@@ -75,16 +77,21 @@ public class ProjectController {
     public ResponseEntity<ProjectDto> getProject(@PathVariable Long id, @RequestHeader("Authorization") String userIdStr) {
         Project project = projectRepository.findById(id).orElse(null);
         if(project == null) {
-            return ResponseEntity.notFound().build();
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Project not found : This is not the project you are looking for");
         }
 
         Long userId = Long.valueOf(userIdStr);
         User user = userRepository.findById(userId).orElse(null);
         if(user == null) {
-            return ResponseEntity.notFound().build();
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied : You need to be logged in to access this project");
         }
 
-        return ResponseEntity.ok(projectMapper.toDto(project, user));
+        ProjectUser projectUser = projectUserRepository.findByProjectAndUser(project, user).orElse(null);
+        if(projectUser == null) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied : You do not have access to this project");
+        }
+
+        return ResponseEntity.ok(projectMapper.toDto(project, user, projectUser.getRole()));
     }
 
     /**
@@ -94,10 +101,21 @@ public class ProjectController {
      * @return les infos du projet avec les rôles utilisateurs
      */
     @GetMapping("/{id}/user-roles")
-    public ResponseEntity<ProjectUserRoleDto> getProjectWithUserRoles(@PathVariable Long id) {
+    public ResponseEntity<ProjectUserRoleDto> getProjectWithUserRoles(@PathVariable Long id, @RequestHeader("Authorization") String userIdStr) {
         Project project = projectRepository.findById(id).orElse(null);
         if(project == null) {
-            return ResponseEntity.notFound().build();
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Project not found : This is not the project you are looking for");
+        }
+
+        Long userId = Long.valueOf(userIdStr);
+        User user = userRepository.findById(userId).orElse(null);
+        if(user == null) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied : You need to be logged in to access this project");
+        }
+
+        ProjectUser projectUser = projectUserRepository.findByProjectAndUser(project, user).orElse(null);
+        if(projectUser == null) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied : You do not have access to this project");
         }
 
         return ResponseEntity.ok(projectUserRoleMapper.toUserRoleDto(project));
@@ -117,7 +135,7 @@ public class ProjectController {
         Long userId = Long.valueOf(userIdStr);
         User user = userRepository.findById(userId).orElse(null);
         if(user == null) {
-            return ResponseEntity.notFound().build();
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied : You need to be logged in to access this project");
         }
 
         Project project = projectMapper.toProject(projectRequest);
@@ -140,11 +158,27 @@ public class ProjectController {
      * @return Les infos de la tâche avec id, nom, description, priorité, status et date de fin
      */
     @PostMapping("/{id}/tasks")
-    public ResponseEntity<SimpleTaskDto> CreateTask(@PathVariable Long id, @RequestBody TaskRequest taskRequest, UriComponentsBuilder uriBuilder) {
+    public ResponseEntity<SimpleTaskDto> CreateTask(@PathVariable Long id, @RequestBody TaskRequest taskRequest, @RequestHeader("Authorization") String userIdStr, UriComponentsBuilder uriBuilder) {
         Project project = projectRepository.findById(id).orElse(null);
 
         if(project == null) {
-            return ResponseEntity.notFound().build();
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Project not found : This is not the project you are looking for");
+        }
+
+        Long userId = Long.valueOf(userIdStr);
+        User user = userRepository.findById(userId).orElse(null);
+        if(user == null) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied : You need to be logged in to access this project");
+        }
+
+        ProjectUser projectUser = projectUserRepository.findByProjectAndUser(project, user).orElse(null);
+        if(projectUser == null) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied : You do not have access to this project");
+        }
+
+        UserRole role = projectUser.getRole();
+        if(role == UserRole.OBSERVER) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied : users of role observer cannot create tasks");
         }
 
         Task task = taskMapper.toTask(taskRequest);
@@ -165,11 +199,26 @@ public class ProjectController {
      * @return Les informations modifiées du projet avec id, nom, description et date de début
      */
     @PutMapping("/{id}")
-    public ResponseEntity<SimpleProjectDto> UpdateProject(@PathVariable Long id, @RequestBody ProjectRequest projectRequest) {
+    public ResponseEntity<SimpleProjectDto> UpdateProject(@PathVariable Long id, @RequestBody ProjectRequest projectRequest, @RequestHeader("Authorization") String userIdStr) {
         Project project = projectRepository.findById(id).orElse(null);
-
         if(project == null) {
-            return ResponseEntity.notFound().build();
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Project not found : This is not the project you are looking for");
+        }
+
+        Long userId = Long.valueOf(userIdStr);
+        User user = userRepository.findById(userId).orElse(null);
+        if(user == null) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied : You need to be logged in to access this project");
+        }
+
+        ProjectUser projectUser = projectUserRepository.findByProjectAndUser(project, user).orElse(null);
+        if(projectUser == null) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied : You do not have access to this project");
+        }
+
+        UserRole role = projectUser.getRole();
+        if(role == UserRole.OBSERVER) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied : users of role observer cannot create tasks");
         }
 
         projectMapper.update(projectRequest, project);
@@ -184,21 +233,37 @@ public class ProjectController {
      * @return Une version simplifiée de la relation entre l'utilisateur et le projet
      */
     @PutMapping("/{id}/add-user")
-    public ResponseEntity<ProjectUserDto> AddUserToProject(@PathVariable Long id, @RequestBody ProjectUserRequest projectUserRequest){
+    public ResponseEntity<ProjectUserDto> AddUserToProject(@PathVariable Long id, @RequestBody ProjectUserRequest projectUserRequest, @RequestHeader("Authorization") String userIdStr){
+        Long userId = Long.valueOf(userIdStr);
+        User user = userRepository.findById(userId).orElse(null);
+        if(user == null) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied : You need to be logged in to access this project");
+        }
+
         Project project = projectRepository.findById(id).orElse(null);
         if(project == null) {
-            return ResponseEntity.notFound().build();
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Project not found : This is not the project you are looking for");
         }
 
-        User user = userRepository.findByEmail(projectUserRequest.getEmail()).orElse(null);
-        if(user == null) {
-            return ResponseEntity.notFound().build();
+        ProjectUser projectUser = projectUserRepository.findByProjectAndUser(project, user).orElse(null);
+        if(projectUser == null) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied : You do not have access to this project");
         }
 
-        ProjectUser projectUser = new ProjectUser(project, user, projectUserRequest.getUserRole());
-        projectUserRepository.save(projectUser);
+        UserRole role = projectUser.getRole();
+        if(role == UserRole.OBSERVER || role == UserRole.MEMBER) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied : users of role observer or member cannot add users to a project");
+        }
 
-        return ResponseEntity.ok(projectUserMapper.toDto(projectUser));
+        User newUser = userRepository.findByEmail(projectUserRequest.getEmail()).orElse(null);
+        if(newUser == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found : The user you are trying to invite could not be found");
+        }
+
+        ProjectUser newProjectUser = new ProjectUser(project, newUser, projectUserRequest.getUserRole());
+        projectUserRepository.save(newProjectUser);
+
+        return ResponseEntity.ok(projectUserMapper.toDto(newProjectUser));
     }
 
     /**
@@ -208,21 +273,37 @@ public class ProjectController {
      * @return Une version simplifiée de la relation entre l'utilisateur et le projet
      */
     @PutMapping("/{id}/change-user-role")
-    public ResponseEntity<ProjectUserDto> ChangeUserRole(@PathVariable Long id, @RequestBody ProjectUserIdRequest projectUserIdRequest) {
-        Project project = projectRepository.findById(id).orElse(null);
-        if(project == null) {
-            return ResponseEntity.notFound().build();
+    public ResponseEntity<ProjectUserDto> ChangeUserRole(@PathVariable Long id, @RequestBody ProjectUserIdRequest projectUserIdRequest, @RequestHeader("Authorization") String userIdStr) {
+        Long userId = Long.valueOf(userIdStr);
+        User user = userRepository.findById(userId).orElse(null);
+        if(user == null) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied : You need to be logged in to access this project");
         }
 
-        User user = userRepository.findById(projectUserIdRequest.getUserId()).orElse(null);
-        if(user == null) {
-            return ResponseEntity.notFound().build();
+        Project project = projectRepository.findById(id).orElse(null);
+        if(project == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Project not found : This is not the project you are looking for");
         }
 
         ProjectUser projectUser = projectUserRepository.findByProjectAndUser(project, user).orElse(null);
-        projectUser.setRole(projectUserIdRequest.getUserRole());
-        projectUserRepository.save(projectUser);
+        if(projectUser == null) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied : You do not have access to this project");
+        }
 
-        return ResponseEntity.ok(projectUserMapper.toDto(projectUser));
+        UserRole role = projectUser.getRole();
+        if(role == UserRole.OBSERVER || role == UserRole.MEMBER) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied : users of role observer or member cannot change the role of other users on a project");
+        }
+
+        User updateUser = userRepository.findById(projectUserIdRequest.getUserId()).orElse(null);
+        if(updateUser == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found : This is not the user you are looking for");
+        }
+
+        ProjectUser updateProjectUser = projectUserRepository.findByProjectAndUser(project, updateUser).orElse(null);
+        updateProjectUser.setRole(projectUserIdRequest.getUserRole());
+        projectUserRepository.save(updateProjectUser);
+
+        return ResponseEntity.ok(projectUserMapper.toDto(updateProjectUser));
     }
 }
