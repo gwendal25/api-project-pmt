@@ -55,6 +55,11 @@ public class ProjectController {
                 .toList();
     }
 
+    /**
+     * Cette méthode renvoie la liste de tous les projets auquel l'utilisateur à accès
+     * @param userIdStr Un faux token d'authorisation qui est l'id de l'utilisateur qui crée le projet
+     * @return une liste de projets simplifiés avec id, nom, description et date de début de chaque projet
+     */
     @GetMapping("/all")
     public ResponseEntity<List<ProjectWithUserRolesDto>> getAllProjectsByUser(@RequestHeader("Authorization") String userIdStr) {
         Long userId = Long.valueOf(userIdStr);
@@ -98,6 +103,7 @@ public class ProjectController {
      * Récupère les informations minimales d'un projet ainsi que les utilisateurs associés et leurs rôles
      * Le projet contient id, nom, description, date de début et liste des utilisateurs
      * @param id Id du projet
+     * @param userIdStr Un faux token d'authorization qui est l'id de l'utilisateur
      * @return les infos du projet avec les rôles utilisateurs
      */
     @GetMapping("/{id}/user-roles")
@@ -154,6 +160,7 @@ public class ProjectController {
      * Les infos de la tâche sont nom, description, priorité, status et date de fin
      * @param id Id du projet auquel ajouter une nouvelle tâche
      * @param taskRequest Les informations pour créer la tâche
+     * @param userIdStr Un faux token d'authorization qui est l'id de l'utilisateur
      * @param uriBuilder Le builder de l'url de la tâche
      * @return Les infos de la tâche avec id, nom, description, priorité, status et date de fin
      */
@@ -196,6 +203,7 @@ public class ProjectController {
      * Les infos du projet sont nom, description et date de début
      * @param id Id du projet à modifier
      * @param projectRequest Les informations de mise à jour du projet
+     * @param userIdStr Un faux token d'authorization qui est l'id de l'utilisateur
      * @return Les informations modifiées du projet avec id, nom, description et date de début
      */
     @PutMapping("/{id}")
@@ -230,6 +238,7 @@ public class ProjectController {
      * Ajoute un utilisateur à un projet en lui donnant un rôle sur ce projet
      * @param id Id du projet auquel associé un nouvel utilisateur
      * @param projectUserRequest les informations de l'utilisateur à ajouter au projet avec son email et son rôle sur le projet
+     * @param userIdStr Un faux token d'authorization qui est l'id de l'utilisateur
      * @return Une version simplifiée de la relation entre l'utilisateur et le projet
      */
     @PutMapping("/{id}/add-user")
