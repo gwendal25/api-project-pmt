@@ -14,12 +14,15 @@ import com.iscod.api_project_pmt.repositories.ProjectRepository;
 import com.iscod.api_project_pmt.repositories.ProjectUserRepository;
 import com.iscod.api_project_pmt.repositories.TaskRepository;
 import com.iscod.api_project_pmt.repositories.UserRepository;
+import com.iscod.api_project_pmt.services.EmailService;
 import com.iscod.api_project_pmt.services.TaskHistoryEntryService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
+
+import java.util.List;
 
 @RestController
 @AllArgsConstructor
@@ -34,6 +37,7 @@ public class TaskController {
     private final SimpleTaskMapper simpleTaskMapper;
     private final ProjectMapper projectMapper;
     private final TaskHistoryEntryService taskHistoryEntryService;
+    private final EmailService emailService;
 
     /**
      * Cette méthode récupère les données d'une tâche et les renvoie
@@ -188,6 +192,9 @@ public class TaskController {
         newUser = userRepository.save(newUser);
         task.setUser(newUser);
         task = taskRepository.save(task);
+
+        List<String> tos = task.getUsersTaskAssignedNotifiedMails();
+        emailService.SendTaskAssignNotificationBulk(tos, project.getName(), task.getName(), task.getUser().getName());
 
         return ResponseEntity.ok(projectMapper.toProjectTaskDto(task, newUser));
     }

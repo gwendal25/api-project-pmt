@@ -16,6 +16,7 @@ import com.iscod.api_project_pmt.repositories.ProjectRepository;
 import com.iscod.api_project_pmt.repositories.ProjectUserRepository;
 import com.iscod.api_project_pmt.repositories.TaskRepository;
 import com.iscod.api_project_pmt.repositories.UserRepository;
+import com.iscod.api_project_pmt.services.EmailService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -41,6 +42,7 @@ public class ProjectController {
     private final TaskMapper taskMapper;
     private final SimpleTaskMapper simpleTaskMapper;
     private final SimpleProjectWithUserRolesMapper simpleProjectWithUserRolesMapper;
+    private final EmailService emailService;
 
     /**
      * Cette méthode renvoie la liste de tous les projets dans la base de données
@@ -271,6 +273,8 @@ public class ProjectController {
 
         ProjectUser newProjectUser = new ProjectUser(project, newUser, projectUserRequest.getUserRole());
         projectUserRepository.save(newProjectUser);
+
+        emailService.SendProjectInvite(user.getName(), newUser.getEmail(), project.getName(), projectUserRequest.getUserRole().toString());
 
         return ResponseEntity.ok(projectUserMapper.toDto(newProjectUser));
     }

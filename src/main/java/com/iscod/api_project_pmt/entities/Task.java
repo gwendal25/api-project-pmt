@@ -6,10 +6,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.joda.time.DateTimeComparator;
 
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 @Getter
 @Setter
@@ -101,5 +98,9 @@ public class Task {
     @Override
     public int hashCode() {
         return Objects.hash(id, name, description, endDate, taskPriority, taskStatus);
+    }
+
+    public List<String> getUsersTaskAssignedNotifiedMails() {
+        return notificationUsers.stream().map(User::getEmail).toList();
     }
 }
