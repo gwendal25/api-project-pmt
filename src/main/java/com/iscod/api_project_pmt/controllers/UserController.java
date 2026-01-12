@@ -22,6 +22,11 @@ public class UserController {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
 
+    /**
+     * Cette méthode retourne la liste de tous les utilisateurs.
+     * Utile pour le debug de l'application
+     * @return La liste des utilisateurs avec id, nom et email
+     */
     @GetMapping
     public List<UserDto> getAllUsers() {
         return userRepository.findAll()
@@ -30,6 +35,11 @@ public class UserController {
                 .toList();
     }
 
+    /**
+     * Retourne les informations d'un utilisateur grâce à son id
+     * @param id l'id de l'utilisateur dont on veut récupérer les informations
+     * @return les informations de l'utilisateur avec id, nom et email
+     */
     @GetMapping("/{id}")
     public ResponseEntity<UserDto> getUser(@PathVariable Long id) {
         User user = userRepository.findById(id).orElse(null);
@@ -40,6 +50,12 @@ public class UserController {
         return ResponseEntity.ok(userMapper.toDto(user));
     }
 
+    /**
+     * Créer un utilisateur avec les informations envoyées dans userRequest
+     * @param userRequest les informations de l'utilisateur avec nom, email, et mot de passe
+     * @param uriBuilder Le builder pour renvoyer l'url de l'utilisateur
+     * @return Les informations de l'utilisateur crée avec l'url pour accéder aux informations cet utilisateur
+     */
     @PostMapping
     public ResponseEntity<UserDto> createUser(@Valid @RequestBody UserRequest userRequest, UriComponentsBuilder uriBuilder) {
         if(!userRequest.getPassword().equals(userRequest.getRepeatPassword())) {
@@ -58,6 +74,11 @@ public class UserController {
         return ResponseEntity.created(uri).body(userDto);
     }
 
+    /**
+     * Permet à un utilisateur de faire une fausse connexion en renvoyant les infos de l'utilisateur si il a envoyé la bonne combinaison de mot de passe/email
+     * @param userLoginRequest La requête de connexion avec email et mot de passe
+     * @return Les informations de l'utilisateur avec id, nom et email
+     */
     @PostMapping("/login")
     public ResponseEntity<UserDto> login(@Valid @RequestBody UserLoginRequest userLoginRequest) {
         User user = userRepository.findByEmail(userLoginRequest.getEmail()).orElse(null);
