@@ -67,7 +67,7 @@ public class ProjectController {
         Long userId = Long.valueOf(userIdStr);
         User user = userRepository.findById(userId).orElse(null);
         if(user == null) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied : You need to log in in order to access your list of projects");
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Access denied : You need to log in in order to access your list of projects");
         }
 
         return ResponseEntity.ok(simpleProjectWithUserRolesMapper.toDtoList(user));
