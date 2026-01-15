@@ -139,21 +139,19 @@ public class ProjectController {
      */
     @PostMapping
     public ResponseEntity<SimpleProjectDto> CreateProject(@RequestBody ProjectRequest projectRequest, @RequestHeader("Authorization") String userIdStr, UriComponentsBuilder uriBuilder) {
-        Long userId = Long.valueOf(userIdStr);
-        User user = userRepository.findById(userId).orElse(null);
+        User user = userService.getUserById(Long.valueOf(userIdStr));
         if(user == null) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied : You need to be logged in to access this project");
         }
 
-        Project project = projectMapper.toProject(projectRequest);
-        project = projectRepository.save(project);
+        Project project = projectService.saveProject(projectRequest);
+        projectUserService.save(project, user, UserRole.ADMIN);
 
-        ProjectUser projectUser = new ProjectUser(project, user, UserRole.ADMIN);
-        projectUserRepository.save(projectUser);
-
-        SimpleProjectDto projectDto = simpleProjectMapper.toDto(project);
-        var uri = uriBuilder.path("/projects/{id}").buildAndExpand(projectDto.getId()).toUri();
-        return ResponseEntity.created(uri).body(projectDto);
+        return ResponseEntity.created(uriBuilder
+                .path("/projects/{id}")
+                .buildAndExpand(project.getId())
+                .toUri())
+                .body(projectService.getSimpleProjectDto(project));
     }
 
     /**

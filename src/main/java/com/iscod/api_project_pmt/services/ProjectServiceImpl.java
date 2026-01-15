@@ -1,6 +1,7 @@
 package com.iscod.api_project_pmt.services;
 
 import com.iscod.api_project_pmt.dtos.project.ProjectDto;
+import com.iscod.api_project_pmt.dtos.project.ProjectRequest;
 import com.iscod.api_project_pmt.dtos.project.ProjectWithUserRolesDto;
 import com.iscod.api_project_pmt.dtos.project.SimpleProjectDto;
 import com.iscod.api_project_pmt.entities.Project;
@@ -36,6 +37,11 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
+    public SimpleProjectDto getSimpleProjectDto(Project project) {
+        return simpleProjectMapper.toDto(project);
+    }
+
+    @Override
     public ProjectDto getProjectDto(Project project, User user, ProjectUser projectUser) {
         return projectMapper.toDto(project, user, projectUser.getRole());
     }
@@ -51,5 +57,10 @@ public class ProjectServiceImpl implements ProjectService {
     @Override
     public List<ProjectWithUserRolesDto> getAllProjectsByUser(User user) {
         return simpleProjectWithUserRolesMapper.toDtoList(user);
+    }
+
+    @Override
+    public Project saveProject(ProjectRequest projectRequest) {
+        return projectRepository.save(projectMapper.toProject(projectRequest));
     }
 }

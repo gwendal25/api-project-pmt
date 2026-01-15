@@ -4,6 +4,7 @@ import com.iscod.api_project_pmt.dtos.project.ProjectUserRoleDto;
 import com.iscod.api_project_pmt.entities.Project;
 import com.iscod.api_project_pmt.entities.ProjectUser;
 import com.iscod.api_project_pmt.entities.User;
+import com.iscod.api_project_pmt.enums.UserRole;
 import com.iscod.api_project_pmt.mappers.ProjectUserRoleMapper;
 import com.iscod.api_project_pmt.repositories.ProjectUserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,5 +26,10 @@ public class ProjectUserServiceImpl implements ProjectUserService {
     @Override
     public ProjectUserRoleDto getProjectUserRoleDto(Project project) {
         return projectUserRoleMapper.toUserRoleDto(project);
+    }
+
+    @Override
+    public ProjectUser save(Project project, User user, UserRole role) {
+        return projectUserRepository.save(new ProjectUser(project, user, role));
     }
 }

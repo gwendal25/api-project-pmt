@@ -1,6 +1,7 @@
 package com.iscod.api_project_pmt.services;
 
 import com.iscod.api_project_pmt.dtos.project.ProjectDto;
+import com.iscod.api_project_pmt.dtos.project.ProjectRequest;
 import com.iscod.api_project_pmt.dtos.project.ProjectWithUserRolesDto;
 import com.iscod.api_project_pmt.dtos.project.SimpleProjectDto;
 import com.iscod.api_project_pmt.entities.Project;
@@ -12,9 +13,13 @@ import java.util.List;
 public interface ProjectService {
     Project getProjectById(Long id);
 
+    SimpleProjectDto getSimpleProjectDto(Project project);
+
     ProjectDto getProjectDto(Project project, User user, ProjectUser projectUser);
 
     List<SimpleProjectDto> getAllProjects();
 
     List<ProjectWithUserRolesDto> getAllProjectsByUser(User user);
+
+    Project saveProject(ProjectRequest projectRequest);
 }
