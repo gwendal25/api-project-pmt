@@ -1,18 +1,19 @@
 package com.iscod.api_project_pmt.controllers;
 
 import com.iscod.api_project_pmt.dtos.project.*;
+import com.iscod.api_project_pmt.dtos.task.SimpleTaskDto;
+import com.iscod.api_project_pmt.dtos.task.TaskRequest;
 import com.iscod.api_project_pmt.entities.Project;
 import com.iscod.api_project_pmt.entities.ProjectUser;
+import com.iscod.api_project_pmt.entities.Task;
 import com.iscod.api_project_pmt.entities.User;
+import com.iscod.api_project_pmt.enums.UserRole;
 import com.iscod.api_project_pmt.mappers.*;
 import com.iscod.api_project_pmt.repositories.ProjectRepository;
 import com.iscod.api_project_pmt.repositories.ProjectUserRepository;
 import com.iscod.api_project_pmt.repositories.TaskRepository;
 import com.iscod.api_project_pmt.repositories.UserRepository;
-import com.iscod.api_project_pmt.services.EmailService;
-import com.iscod.api_project_pmt.services.ProjectService;
-import com.iscod.api_project_pmt.services.ProjectUserService;
-import com.iscod.api_project_pmt.services.UserService;
+import com.iscod.api_project_pmt.services.*;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -86,6 +87,8 @@ public class ProjectControllerTest {
     ProjectUserService projectUserService;
     @MockitoBean
     UserService userService;
+    @MockitoBean
+    TaskService taskService;
 
     @Test
     public void testGetAllProjects_ReturnsEmptyList() throws Exception {
@@ -379,6 +382,140 @@ public class ProjectControllerTest {
 
         // Act and Assert
         mockMvc.perform(post("/projects")
+                        .header("Authorization", userId.toString())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonRequest))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    public void testCreateTask_Success() throws Exception {
+        // Arrange
+        Long userId = 1L;
+        Long projectId = 100L;
+        User user = new User();
+        user.setId(userId);
+
+        Project project = new Project();
+        project.setId(projectId);
+
+        ProjectUser projectUser = new ProjectUser();
+        projectUser.setRole(UserRole.ADMIN);
+
+        Task task = new Task();
+        task.setId(50L);
+        task.setName("New Task");
+
+        SimpleTaskDto taskDto = new SimpleTaskDto();
+        taskDto.setId(50L);
+        taskDto.setName("New Task");
+
+        when(userService.getUserById(userId)).thenReturn(user);
+        when(projectService.getProjectById(projectId)).thenReturn(project);
+        when(projectUserService.getByProjectAndUser(project, user)).thenReturn(projectUser);
+        when(taskService.save(any(TaskRequest.class), eq(project))).thenReturn(task);
+        when(taskService.getSimpleTaskDto(task)).thenReturn(taskDto);
+
+        String jsonRequest = "{\"name\":\"New Task\"}";
+
+        // Act and Assert
+        mockMvc.perform(post("/projects/{id}/tasks", projectId)
+                        .header("Authorization", userId.toString())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonRequest))
+                .andExpect(status().isCreated())
+                .andExpect(header().string("Location", "http://localhost/tasks/50"))
+                .andExpect(jsonPath("$.id").value(50))
+                .andExpect(jsonPath("$.name").value("New Task"));
+
+        verify(projectService).addTask(project, task);
+    }
+
+    @Test
+    public void testCreateTask_UserNotFound() throws Exception {
+        // Arrange
+        Long userId = 999L;
+        Long projectId = 100L;
+        when(userService.getUserById(userId)).thenReturn(null);
+
+        String jsonRequest = "{\"name\":\"New Task\"}";
+
+        // Act and Assert
+        mockMvc.perform(post("/projects/{id}/tasks", projectId)
+                        .header("Authorization", userId.toString())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonRequest))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    public void testCreateTask_ProjectNotFound() throws Exception {
+        // Arrange
+        Long userId = 1L;
+        Long projectId = 999L;
+        User user = new User();
+        user.setId(userId);
+
+        when(userService.getUserById(userId)).thenReturn(user);
+        when(projectService.getProjectById(projectId)).thenReturn(null);
+
+        String jsonRequest = "{\"name\":\"New Task\"}";
+
+        // Act and Assert
+        mockMvc.perform(post("/projects/{id}/tasks", projectId)
+                        .header("Authorization", userId.toString())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonRequest))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void testCreateTask_AccessDenied() throws Exception {
+        // Arrange
+        Long userId = 1L;
+        Long projectId = 100L;
+        User user = new User();
+        user.setId(userId);
+
+        Project project = new Project();
+        project.setId(projectId);
+
+        when(userService.getUserById(userId)).thenReturn(user);
+        when(projectService.getProjectById(projectId)).thenReturn(project);
+        when(projectUserService.getByProjectAndUser(project, user)).thenReturn(null);
+
+        String jsonRequest = "{\"name\":\"New Task\"}";
+
+        // Act and Assert
+        mockMvc.perform(post("/projects/{id}/tasks", projectId)
+                        .header("Authorization", userId.toString())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonRequest))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    public void testCreateTask_ObserverCannotCreate() throws Exception {
+        // Arrange
+        Long userId = 1L;
+        Long projectId = 100L;
+        User user = new User();
+        user.setId(userId);
+
+        Project project = new Project();
+        project.setId(projectId);
+
+        ProjectUser projectUser = new ProjectUser();
+        projectUser.setRole(UserRole.OBSERVER);
+
+        when(userService.getUserById(userId)).thenReturn(user);
+        when(projectService.getProjectById(projectId)).thenReturn(project);
+        when(projectUserService.getByProjectAndUser(project, user)).thenReturn(projectUser);
+
+        String jsonRequest = "{\"name\":\"New Task\"}";
+
+        // Act and Assert
+        mockMvc.perform(post("/projects/{id}/tasks", projectId)
                         .header("Authorization", userId.toString())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jsonRequest))

@@ -186,7 +186,7 @@ public class ProjectController {
                 .path("/tasks/{id}")
                 .buildAndExpand(task.getId())
                 .toUri())
-                .body(simpleTaskMapper.toDto(task));
+                .body(taskService.getSimpleTaskDto(task));
     }
 
     /**
