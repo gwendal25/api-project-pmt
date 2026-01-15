@@ -24,5 +24,7 @@ public interface ProjectService {
 
     Project saveProject(ProjectRequest projectRequest);
 
+    void updateProject(ProjectRequest projectRequest, Project project);
+
     void addTask(Project project, Task task);
 }

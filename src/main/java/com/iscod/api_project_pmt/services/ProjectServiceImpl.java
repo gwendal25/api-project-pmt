@@ -65,6 +65,12 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
+    public void updateProject(ProjectRequest projectRequest, Project project) {
+        projectMapper.update(projectRequest, project);
+        projectRepository.save(project);
+    }
+
+    @Override
     public void addTask(Project project, Task task) {
         project.addTask(task);
         projectRepository.save(project);

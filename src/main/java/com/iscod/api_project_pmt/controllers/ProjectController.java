@@ -125,13 +125,13 @@ public class ProjectController {
     }
 
     /**
-     * Créer un nouveau projet et l'enregistre dans la base de données.
-     * L'utilisateur qui crée le projet est associé au projet en tant qu'administrateur du projet
-     * Les infos du projet sont nom, description et date de début.
-     * @param projectRequest Les informations du projet à créer
-     * @param userIdStr Un faux token d'authorisation qui est l'id de l'utilisateur qui crée le projet
-     * @param uriBuilder Le builder de l'url du projet
-     * @return Les informations simplifiées du projet avec uniquement id, nom, description et date de début
+     * Creates a new project and associates it with the authenticated user.
+     * Throws a 403 Forbidden exception if the user is not logged in.
+     *
+     * @param projectRequest The details of the project to be created, including name, description, and start date.
+     * @param userIdStr The user's ID passed as an Authorization header.
+     * @param uriBuilder The URI builder used to construct the location of the newly created project.
+     * @return A ResponseEntity containing the simplified project details (id, name, description, and start date) along with the appropriate HTTP status.
      */
     @PostMapping
     public ResponseEntity<SimpleProjectDto> CreateProject(@RequestBody ProjectRequest projectRequest, @RequestHeader("Authorization") String userIdStr, UriComponentsBuilder uriBuilder) {
@@ -199,30 +199,27 @@ public class ProjectController {
      */
     @PutMapping("/{id}")
     public ResponseEntity<SimpleProjectDto> UpdateProject(@PathVariable Long id, @RequestBody ProjectRequest projectRequest, @RequestHeader("Authorization") String userIdStr) {
-        Project project = projectRepository.findById(id).orElse(null);
-        if(project == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Project not found : This is not the project you are looking for");
-        }
-
-        Long userId = Long.valueOf(userIdStr);
-        User user = userRepository.findById(userId).orElse(null);
+        User user = userService.getUserById(Long.valueOf(userIdStr));
         if(user == null) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied : You need to be logged in to access this project");
         }
 
-        ProjectUser projectUser = projectUserRepository.findByProjectAndUser(project, user).orElse(null);
+        Project project = projectService.getProjectById(id);
+        if(project == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Project not found : This is not the project you are looking for");
+        }
+
+        ProjectUser projectUser = projectUserService.getByProjectAndUser(project, user);
         if(projectUser == null) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied : You do not have access to this project");
         }
 
-        UserRole role = projectUser.getRole();
-        if(role == UserRole.OBSERVER) {
+        if(projectUser.getRole() == UserRole.OBSERVER) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied : users of role observer cannot create tasks");
         }
 
-        projectMapper.update(projectRequest, project);
-        projectRepository.save(project);
-        return ResponseEntity.ok(simpleProjectMapper.toDto(project));
+        projectService.updateProject(projectRequest, project);
+        return ResponseEntity.ok(projectService.getSimpleProjectDto(project));
     }
 
     /**
