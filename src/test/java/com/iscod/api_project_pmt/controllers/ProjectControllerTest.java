@@ -1,6 +1,7 @@
 package com.iscod.api_project_pmt.controllers;
 
 import com.iscod.api_project_pmt.dtos.project.ProjectDto;
+import com.iscod.api_project_pmt.dtos.project.ProjectUserRoleDto;
 import com.iscod.api_project_pmt.dtos.project.ProjectWithUserRolesDto;
 import com.iscod.api_project_pmt.dtos.project.SimpleProjectDto;
 import com.iscod.api_project_pmt.entities.Project;
@@ -248,5 +249,86 @@ public class ProjectControllerTest {
                         .header("Authorization", userId.toString())
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    public void testGetProjectWithUserRoles_Success() throws Exception {
+        // Arrange
+        Long userId = 1L;
+        Long projectId = 123L;
+        User user = new User();
+        user.setId(userId);
+
+        Project project = new Project();
+        project.setId(projectId);
+
+        ProjectUser projectUser = new ProjectUser();
+        ProjectUserRoleDto projectUserRoleDto = new ProjectUserRoleDto();
+
+        when(userService.getUserById(userId)).thenReturn(user);
+        when(projectService.getProjectById(projectId)).thenReturn(project);
+        when(projectUserService.getByProjectAndUser(project, user)).thenReturn(projectUser);
+        when(projectUserService.getProjectUserRoleDto(project)).thenReturn(projectUserRoleDto);
+
+        // Act and Assert
+        mockMvc.perform(get("/projects/{id}/user-roles", projectId)
+                        .header("Authorization", userId.toString())
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    public void testGetProjectWithUserRoles_UserNotFound() throws Exception {
+        // Arrange
+        Long userId = 1L;
+        Long projectId = 123L;
+
+        when(userService.getUserById(userId)).thenReturn(null);
+
+        // Act and Assert
+        mockMvc.perform(get("/projects/{id}/user-roles", projectId)
+                        .header("Authorization", userId.toString())
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    public void testGetProjectWithUserRoles_ProjectNotFound() throws Exception {
+        // Arrange
+        Long userId = 1L;
+        Long projectId = 123L;
+        User user = new User();
+        user.setId(userId);
+
+        when(userService.getUserById(userId)).thenReturn(user);
+        when(projectService.getProjectById(projectId)).thenReturn(null);
+
+        // Act and Assert
+        mockMvc.perform(get("/projects/{id}/user-roles", projectId)
+                        .header("Authorization", userId.toString())
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void testGetProjectWithUserRoles_AccessDenied() throws Exception {
+        // Arrange
+        Long userId = 1L;
+        Long projectId = 123L;
+        User user = new User();
+        user.setId(userId);
+
+        Project project = new Project();
+        project.setId(projectId);
+
+        when(userService.getUserById(userId)).thenReturn(user);
+        when(projectService.getProjectById(projectId)).thenReturn(project);
+        when(projectUserService.getByProjectAndUser(project, user)).thenReturn(null);
+
+        // Act and Assert
+        mockMvc.perform(get("/projects/{id}/user-roles", projectId)
+                        .header("Authorization", userId.toString())
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isForbidden());
     }
 }
