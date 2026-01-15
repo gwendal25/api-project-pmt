@@ -25,26 +25,33 @@ public abstract class ProjectMapper {
     ProjectTaskMapper projectTaskMapper;
 
     public ProjectDto toDto(Project project, User user, UserRole role) {
-        ProjectDto projectDto = new ProjectDto(project.getId(), project.getName(), project.getDescription(), project.getStartDate());
+        ProjectDto projectDto = toPartialDto(project);
         projectDto.setUserRole(role);
-        List<UserDto> users = new ArrayList<>(project.getUsers().stream()
-                .map(projectUser -> userMapper.toDto(projectUser.getUser()))
-                .toList());
+        List<UserDto> users = project.getUsers().stream()
+                .map(ProjectUser::getUser)
+                .map(userProject -> userMapper.toDto(userProject))
+                .toList();
         projectDto.setUsers(users);
-        List<ProjectTaskDto> tasks = new ArrayList<>(project.getTasks().stream()
+        List<ProjectTaskDto> tasks = project.getTasks().stream()
                 .map(task -> toProjectTaskDto(task, user))
-                .toList());
+                .toList();
         projectDto.setTasks(tasks);
         return projectDto;
     }
 
+    @Mapping(target="tasks", ignore=true)
+    @Mapping(target="users", ignore=true)
+    @Mapping(target="userRole", ignore=true)
+    public abstract ProjectDto toPartialDto(Project project);
+
     public abstract Project toProject(ProjectRequest projectRequest);
+
     public abstract void update(ProjectRequest projectRequest, @MappingTarget Project project);
+
     @Mapping(source="user.id", target="id")
     @Mapping(source="user.name", target="name")
     @Mapping(source="user.email", target="email")
     public abstract UserDto projectUserTouserDto(ProjectUser projectUser);
-    public abstract List<UserDto> projectUserListToUserDto(List<ProjectUser> projectUserList);
 
     public ProjectTaskDto toProjectTaskDto(Task task, User user) {
         ProjectTaskDto projectTaskDto = projectTaskMapper.toDto(task);

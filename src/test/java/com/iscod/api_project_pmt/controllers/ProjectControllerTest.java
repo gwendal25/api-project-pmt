@@ -10,6 +10,9 @@ import com.iscod.api_project_pmt.repositories.ProjectUserRepository;
 import com.iscod.api_project_pmt.repositories.TaskRepository;
 import com.iscod.api_project_pmt.repositories.UserRepository;
 import com.iscod.api_project_pmt.services.EmailService;
+import com.iscod.api_project_pmt.services.ProjectService;
+import com.iscod.api_project_pmt.services.ProjectUserService;
+import com.iscod.api_project_pmt.services.UserService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -75,10 +78,17 @@ public class ProjectControllerTest {
     @MockitoBean
     private SimpleProjectMapper simpleProjectMapper;
 
+    @MockitoBean
+    ProjectService projectService;
+    @MockitoBean
+    ProjectUserService projectUserService;
+    @MockitoBean
+    UserService userService;
+
     @Test
     public void testGetAllProjects_ReturnsEmptyList() throws Exception {
         // Arrange
-        when(projectRepository.findAll()).thenReturn(List.of());
+        when(projectService.getAllProjects()).thenReturn(List.of());
 
         // Act and Assert
         mockMvc.perform(get("/projects")
@@ -91,8 +101,6 @@ public class ProjectControllerTest {
     public void testGetAllProjects_ReturnsListOfProjects() throws Exception {
         // Arrange
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-        Date date1 = new Date();
-        Date date2 = new Date();
 
         Project project1 = new Project();
         project1.setId(1L);
@@ -112,7 +120,7 @@ public class ProjectControllerTest {
         SimpleProjectDto dto2 = new SimpleProjectDto();
         dto2.setStartDate(project2.getStartDate());
 
-        when(projectRepository.findAll()).thenReturn(Arrays.asList(project1, project2));
+        when(projectService.getAllProjects()).thenReturn(Arrays.asList(dto1, dto2));
         when(simpleProjectMapper.toDto(project1)).thenReturn(dto1);
         when(simpleProjectMapper.toDto(project2)).thenReturn(dto2);
 
@@ -135,8 +143,8 @@ public class ProjectControllerTest {
         ProjectWithUserRolesDto projectDto = new ProjectWithUserRolesDto();
         projectDto.setId(1L);
 
-        when(userRepository.findById(userId)).thenReturn(java.util.Optional.of(user));
-        when(simpleProjectWithUserRolesMapper.toDtoList(user)).thenReturn(List.of(projectDto));
+        when(userService.getUserById(userId)).thenReturn(user);
+        when(projectService.getAllProjectsByUser(user)).thenReturn(List.of(projectDto));
 
         // Act and Assert
         mockMvc.perform(get("/projects/all")
@@ -151,7 +159,7 @@ public class ProjectControllerTest {
     public void testGetAllProjectsByUser_ThrowsForbiddenForInvalidUser() throws Exception {
         // Arrange
         Long userId = 999L;
-        when(userRepository.findById(userId)).thenReturn(java.util.Optional.empty());
+        when(userService.getUserById(userId)).thenReturn(null);
 
         // Act and Assert
         mockMvc.perform(get("/projects/all")

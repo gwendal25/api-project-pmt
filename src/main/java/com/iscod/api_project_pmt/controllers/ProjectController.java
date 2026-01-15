@@ -17,6 +17,9 @@ import com.iscod.api_project_pmt.repositories.ProjectUserRepository;
 import com.iscod.api_project_pmt.repositories.TaskRepository;
 import com.iscod.api_project_pmt.repositories.UserRepository;
 import com.iscod.api_project_pmt.services.EmailService;
+import com.iscod.api_project_pmt.services.ProjectService;
+import com.iscod.api_project_pmt.services.ProjectUserService;
+import com.iscod.api_project_pmt.services.UserService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -38,11 +41,13 @@ public class ProjectController {
     private final ProjectMapper projectMapper;
     private final SimpleProjectMapper simpleProjectMapper;
     private final ProjectUserMapper projectUserMapper;
-    private final ProjectUserRoleMapper projectUserRoleMapper;
     private final TaskMapper taskMapper;
     private final SimpleTaskMapper simpleTaskMapper;
-    private final SimpleProjectWithUserRolesMapper simpleProjectWithUserRolesMapper;
     private final EmailService emailService;
+
+    private final ProjectService projectService;
+    private final ProjectUserService projectUserService;
+    private final UserService userService;
 
     /**
      * Cette méthode renvoie la liste de tous les projets dans la base de données
@@ -51,10 +56,7 @@ public class ProjectController {
      */
     @GetMapping
     public List<SimpleProjectDto> getAllProjects() {
-        return projectRepository.findAll()
-                .stream()
-                .map(simpleProjectMapper::toDto)
-                .toList();
+        return projectService.getAllProjects();
     }
 
     /**
@@ -64,13 +66,12 @@ public class ProjectController {
      */
     @GetMapping("/all")
     public ResponseEntity<List<ProjectWithUserRolesDto>> getAllProjectsByUser(@RequestHeader("Authorization") String userIdStr) {
-        Long userId = Long.valueOf(userIdStr);
-        User user = userRepository.findById(userId).orElse(null);
+        User user = userService.getUserById(Long.valueOf(userIdStr));
         if(user == null) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Access denied : You need to log in in order to access your list of projects");
         }
 
-        return ResponseEntity.ok(simpleProjectWithUserRolesMapper.toDtoList(user));
+        return ResponseEntity.ok(projectService.getAllProjectsByUser(user));
     }
 
     /**
@@ -82,23 +83,22 @@ public class ProjectController {
      */
     @GetMapping("/{id}")
     public ResponseEntity<ProjectDto> getProject(@PathVariable Long id, @RequestHeader("Authorization") String userIdStr) {
-        Project project = projectRepository.findById(id).orElse(null);
-        if(project == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Project not found : This is not the project you are looking for");
-        }
-
-        Long userId = Long.valueOf(userIdStr);
-        User user = userRepository.findById(userId).orElse(null);
+        User user = userService.getUserById(Long.valueOf(userIdStr));
         if(user == null) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied : You need to be logged in to access this project");
         }
 
-        ProjectUser projectUser = projectUserRepository.findByProjectAndUser(project, user).orElse(null);
+        Project project = projectService.getProjectById(id);
+        if(project == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Project not found : This is not the project you are looking for");
+        }
+
+        ProjectUser projectUser = projectUserService.getByProjectAndUser(project, user);
         if(projectUser == null) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied : You do not have access to this project");
         }
 
-        return ResponseEntity.ok(projectMapper.toDto(project, user, projectUser.getRole()));
+        return ResponseEntity.ok(projectService.getProjectDto(project, user, projectUser));
     }
 
     /**
@@ -110,23 +110,22 @@ public class ProjectController {
      */
     @GetMapping("/{id}/user-roles")
     public ResponseEntity<ProjectUserRoleDto> getProjectWithUserRoles(@PathVariable Long id, @RequestHeader("Authorization") String userIdStr) {
-        Project project = projectRepository.findById(id).orElse(null);
-        if(project == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Project not found : This is not the project you are looking for");
-        }
-
-        Long userId = Long.valueOf(userIdStr);
-        User user = userRepository.findById(userId).orElse(null);
+        User user = userService.getUserById(Long.valueOf(userIdStr));
         if(user == null) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied : You need to be logged in to access this project");
         }
 
-        ProjectUser projectUser = projectUserRepository.findByProjectAndUser(project, user).orElse(null);
+        Project project = projectService.getProjectById(id);
+        if(project == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Project not found : This is not the project you are looking for");
+        }
+
+        ProjectUser projectUser = projectUserService.getByProjectAndUser(project, user);
         if(projectUser == null) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied : You do not have access to this project");
         }
 
-        return ResponseEntity.ok(projectUserRoleMapper.toUserRoleDto(project));
+        return ResponseEntity.ok(projectUserService.getProjectUserRoleDto(project));
     }
 
     /**
