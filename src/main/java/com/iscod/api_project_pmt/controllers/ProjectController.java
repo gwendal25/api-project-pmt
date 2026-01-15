@@ -16,10 +16,7 @@ import com.iscod.api_project_pmt.repositories.ProjectRepository;
 import com.iscod.api_project_pmt.repositories.ProjectUserRepository;
 import com.iscod.api_project_pmt.repositories.TaskRepository;
 import com.iscod.api_project_pmt.repositories.UserRepository;
-import com.iscod.api_project_pmt.services.EmailService;
-import com.iscod.api_project_pmt.services.ProjectService;
-import com.iscod.api_project_pmt.services.ProjectUserService;
-import com.iscod.api_project_pmt.services.UserService;
+import com.iscod.api_project_pmt.services.*;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -35,19 +32,18 @@ import java.util.List;
 @RequestMapping("/projects")
 public class ProjectController {
     private final ProjectRepository projectRepository;
-    private final TaskRepository taskRepository;
     private final UserRepository userRepository;
     private final ProjectUserRepository projectUserRepository;
     private final ProjectMapper projectMapper;
     private final SimpleProjectMapper simpleProjectMapper;
     private final ProjectUserMapper projectUserMapper;
-    private final TaskMapper taskMapper;
     private final SimpleTaskMapper simpleTaskMapper;
     private final EmailService emailService;
 
     private final ProjectService projectService;
     private final ProjectUserService projectUserService;
     private final UserService userService;
+    private final TaskService taskService;
 
     /**
      * Cette méthode renvoie la liste de tous les projets dans la base de données
@@ -165,36 +161,32 @@ public class ProjectController {
      */
     @PostMapping("/{id}/tasks")
     public ResponseEntity<SimpleTaskDto> CreateTask(@PathVariable Long id, @RequestBody TaskRequest taskRequest, @RequestHeader("Authorization") String userIdStr, UriComponentsBuilder uriBuilder) {
-        Project project = projectRepository.findById(id).orElse(null);
-
-        if(project == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Project not found : This is not the project you are looking for");
-        }
-
-        Long userId = Long.valueOf(userIdStr);
-        User user = userRepository.findById(userId).orElse(null);
+        User user = userService.getUserById(Long.valueOf(userIdStr));
         if(user == null) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied : You need to be logged in to access this project");
         }
 
-        ProjectUser projectUser = projectUserRepository.findByProjectAndUser(project, user).orElse(null);
+        Project project = projectService.getProjectById(id);
+        if(project == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Project not found : This is not the project you are looking for");
+        }
+
+        ProjectUser projectUser = projectUserService.getByProjectAndUser(project, user);
         if(projectUser == null) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied : You do not have access to this project");
         }
 
-        UserRole role = projectUser.getRole();
-        if(role == UserRole.OBSERVER) {
+        if(projectUser.getRole() == UserRole.OBSERVER) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied : users of role observer cannot create tasks");
         }
 
-        Task task = taskMapper.toTask(taskRequest);
-        task.setProject(project);
-        project.addTask(task);
-        taskRepository.save(task);
-        projectRepository.save(project);
-        SimpleTaskDto taskDto = simpleTaskMapper.toDto(task);
-        var uri = uriBuilder.path("/tasks/{id}").buildAndExpand(taskDto.getId()).toUri();
-        return ResponseEntity.created(uri).body(taskDto);
+        Task task = taskService.save(taskRequest, project);
+        projectService.addTask(project, task);
+        return ResponseEntity.created(uriBuilder
+                .path("/tasks/{id}")
+                .buildAndExpand(task.getId())
+                .toUri())
+                .body(simpleTaskMapper.toDto(task));
     }
 
     /**

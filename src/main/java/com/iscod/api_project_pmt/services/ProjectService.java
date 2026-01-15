@@ -6,6 +6,7 @@ import com.iscod.api_project_pmt.dtos.project.ProjectWithUserRolesDto;
 import com.iscod.api_project_pmt.dtos.project.SimpleProjectDto;
 import com.iscod.api_project_pmt.entities.Project;
 import com.iscod.api_project_pmt.entities.ProjectUser;
+import com.iscod.api_project_pmt.entities.Task;
 import com.iscod.api_project_pmt.entities.User;
 
 import java.util.List;
@@ -22,4 +23,6 @@ public interface ProjectService {
     List<ProjectWithUserRolesDto> getAllProjectsByUser(User user);
 
     Project saveProject(ProjectRequest projectRequest);
+
+    void addTask(Project project, Task task);
 }
