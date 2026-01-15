@@ -1,8 +1,10 @@
 package com.iscod.api_project_pmt.controllers;
 
+import com.iscod.api_project_pmt.dtos.project.ProjectDto;
 import com.iscod.api_project_pmt.dtos.project.ProjectWithUserRolesDto;
 import com.iscod.api_project_pmt.dtos.project.SimpleProjectDto;
 import com.iscod.api_project_pmt.entities.Project;
+import com.iscod.api_project_pmt.entities.ProjectUser;
 import com.iscod.api_project_pmt.entities.User;
 import com.iscod.api_project_pmt.mappers.*;
 import com.iscod.api_project_pmt.repositories.ProjectRepository;
@@ -15,7 +17,6 @@ import com.iscod.api_project_pmt.services.ProjectUserService;
 import com.iscod.api_project_pmt.services.UserService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -95,6 +96,87 @@ public class ProjectControllerTest {
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(0));
+    }
+
+    @Test
+    public void testGetProject_Success() throws Exception {
+        // Arrange
+        Long userId = 1L;
+        Long projectId = 123L;
+        User user = new User();
+        user.setId(userId);
+
+        Project project = new Project();
+        project.setId(projectId);
+
+        ProjectUser projectUser = new ProjectUser();
+        ProjectDto projectDto = new ProjectDto();
+
+        when(userService.getUserById(userId)).thenReturn(user);
+        when(projectService.getProjectById(projectId)).thenReturn(project);
+        when(projectUserService.getByProjectAndUser(project, user)).thenReturn(projectUser);
+        when(projectService.getProjectDto(project, user, projectUser)).thenReturn(projectDto);
+
+        // Act and Assert
+        mockMvc.perform(get("/projects/{id}", projectId)
+                        .header("Authorization", userId.toString())
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    public void testGetProject_NotFound() throws Exception {
+        // Arrange
+        Long userId = 1L;
+        Long projectId = 123L;
+        User user = new User();
+        user.setId(userId);
+
+        when(userService.getUserById(userId)).thenReturn(user);
+        when(projectService.getProjectById(projectId)).thenReturn(null);
+
+        // Act and Assert
+        mockMvc.perform(get("/projects/{id}", projectId)
+                        .header("Authorization", userId.toString())
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void testGetProject_Forbidden() throws Exception {
+        // Arrange
+        Long userId = 1L;
+        Long projectId = 123L;
+        User user = new User();
+        user.setId(userId);
+
+        Project project = new Project();
+        project.setId(projectId);
+
+        when(userService.getUserById(userId)).thenReturn(user);
+        when(projectService.getProjectById(projectId)).thenReturn(project);
+        when(projectUserService.getByProjectAndUser(project, user)).thenReturn(null);
+
+        // Act and Assert
+        mockMvc.perform(get("/projects/{id}", projectId)
+                        .header("Authorization", userId.toString())
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    public void testGetProject_Unauthorized() throws Exception {
+        // Arrange
+        Long userId = 999L;
+        Long projectId = 123L;
+
+        when(userService.getUserById(userId)).thenReturn(null);
+
+        // Act and Assert
+        mockMvc.perform(get("/projects/{id}", projectId)
+                        .header("Authorization", userId.toString())
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isForbidden());
     }
 
     @Test
