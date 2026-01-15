@@ -1,9 +1,6 @@
 package com.iscod.api_project_pmt.controllers;
 
-import com.iscod.api_project_pmt.dtos.project.ProjectDto;
-import com.iscod.api_project_pmt.dtos.project.ProjectUserRoleDto;
-import com.iscod.api_project_pmt.dtos.project.ProjectWithUserRolesDto;
-import com.iscod.api_project_pmt.dtos.project.SimpleProjectDto;
+import com.iscod.api_project_pmt.dtos.project.*;
 import com.iscod.api_project_pmt.entities.Project;
 import com.iscod.api_project_pmt.entities.ProjectUser;
 import com.iscod.api_project_pmt.entities.User;
@@ -31,10 +28,13 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @AutoConfigureMockMvc(addFilters = false)
 @ExtendWith(MockitoExtension.class)
@@ -329,6 +329,59 @@ public class ProjectControllerTest {
         mockMvc.perform(get("/projects/{id}/user-roles", projectId)
                         .header("Authorization", userId.toString())
                         .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    public void testCreateProject_Success() throws Exception {
+        // Arrange
+        Long userId = 1L;
+        User user = new User();
+        user.setId(userId);
+
+        ProjectRequest request = new ProjectRequest();
+        request.setName("New Project");
+
+        Project project = new Project();
+        project.setId(100L);
+        project.setName("New Project");
+
+        SimpleProjectDto simpleDto = new SimpleProjectDto();
+        simpleDto.setId(100L);
+        simpleDto.setName("New Project");
+
+        when(userService.getUserById(userId)).thenReturn(user);
+        when(projectService.saveProject(any(ProjectRequest.class))).thenReturn(project);
+        when(projectService.getSimpleProjectDto(project)).thenReturn(simpleDto);
+
+        String jsonRequest = "{\"name\":\"New Project\"}";
+
+        // Act and Assert
+        mockMvc.perform(post("/projects")
+                        .header("Authorization", userId.toString())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonRequest))
+                .andExpect(status().isCreated())
+                .andExpect(header().string("Location", "http://localhost/projects/100"))
+                .andExpect(jsonPath("$.id").value(100))
+                .andExpect(jsonPath("$.name").value("New Project"));
+
+        verify(projectUserService).save(eq(project), eq(user), any());
+    }
+
+    @Test
+    public void testCreateProject_UserNotFound() throws Exception {
+        // Arrange
+        Long userId = 999L;
+        when(userService.getUserById(userId)).thenReturn(null);
+
+        String jsonRequest = "{\"name\":\"New Project\"}";
+
+        // Act and Assert
+        mockMvc.perform(post("/projects")
+                        .header("Authorization", userId.toString())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonRequest))
                 .andExpect(status().isForbidden());
     }
 }
