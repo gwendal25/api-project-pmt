@@ -14,7 +14,6 @@ import com.iscod.api_project_pmt.enums.UserRole;
 import com.iscod.api_project_pmt.mappers.*;
 import com.iscod.api_project_pmt.repositories.ProjectRepository;
 import com.iscod.api_project_pmt.repositories.ProjectUserRepository;
-import com.iscod.api_project_pmt.repositories.TaskRepository;
 import com.iscod.api_project_pmt.repositories.UserRepository;
 import com.iscod.api_project_pmt.services.*;
 import lombok.AllArgsConstructor;
@@ -34,12 +33,9 @@ public class ProjectController {
     private final ProjectRepository projectRepository;
     private final UserRepository userRepository;
     private final ProjectUserRepository projectUserRepository;
-    private final ProjectMapper projectMapper;
-    private final SimpleProjectMapper simpleProjectMapper;
     private final ProjectUserMapper projectUserMapper;
-    private final SimpleTaskMapper simpleTaskMapper;
-    private final EmailService emailService;
 
+    private final EmailService emailService;
     private final ProjectService projectService;
     private final ProjectUserService projectUserService;
     private final UserService userService;
@@ -231,38 +227,33 @@ public class ProjectController {
      */
     @PutMapping("/{id}/add-user")
     public ResponseEntity<ProjectUserDto> AddUserToProject(@PathVariable Long id, @RequestBody ProjectUserRequest projectUserRequest, @RequestHeader("Authorization") String userIdStr){
-        Long userId = Long.valueOf(userIdStr);
-        User user = userRepository.findById(userId).orElse(null);
+        User user = userService.getUserById(Long.valueOf(userIdStr));
         if(user == null) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied : You need to be logged in to access this project");
         }
 
-        Project project = projectRepository.findById(id).orElse(null);
+        Project project = projectService.getProjectById(id);
         if(project == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Project not found : This is not the project you are looking for");
         }
 
-        ProjectUser projectUser = projectUserRepository.findByProjectAndUser(project, user).orElse(null);
+        ProjectUser projectUser = projectUserService.getByProjectAndUser(project, user);
         if(projectUser == null) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied : You do not have access to this project");
         }
 
-        UserRole role = projectUser.getRole();
-        if(role == UserRole.OBSERVER || role == UserRole.MEMBER) {
+        if(projectUser.getRole() == UserRole.OBSERVER || projectUser.getRole() == UserRole.MEMBER) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied : users of role observer or member cannot add users to a project");
         }
 
-        User newUser = userRepository.findByEmail(projectUserRequest.getEmail()).orElse(null);
+        User newUser = userService.getByEmail(projectUserRequest.getEmail());
         if(newUser == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found : The user you are trying to invite could not be found");
         }
 
-        ProjectUser newProjectUser = new ProjectUser(project, newUser, projectUserRequest.getUserRole());
-        projectUserRepository.save(newProjectUser);
-
+        ProjectUser newProjectUser = projectUserService.save(project, newUser, projectUserRequest.getUserRole());
         emailService.SendProjectInvite(user.getName(), newUser.getEmail(), project.getName(), projectUserRequest.getUserRole().toString());
-
-        return ResponseEntity.ok(projectUserMapper.toDto(newProjectUser));
+        return ResponseEntity.ok(projectUserService.getProjectUserDto(newProjectUser));
     }
 
     /**

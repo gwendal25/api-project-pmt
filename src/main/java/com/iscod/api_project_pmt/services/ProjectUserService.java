@@ -1,6 +1,7 @@
 package com.iscod.api_project_pmt.services;
 
 import com.iscod.api_project_pmt.dtos.project.ProjectUserRoleDto;
+import com.iscod.api_project_pmt.dtos.projectuser.ProjectUserDto;
 import com.iscod.api_project_pmt.entities.Project;
 import com.iscod.api_project_pmt.entities.ProjectUser;
 import com.iscod.api_project_pmt.entities.User;
@@ -12,4 +13,6 @@ public interface ProjectUserService {
     ProjectUserRoleDto getProjectUserRoleDto(Project project);
 
     ProjectUser save(Project project, User user, UserRole role);
+
+    ProjectUserDto getProjectUserDto(ProjectUser projectUser);
 }
