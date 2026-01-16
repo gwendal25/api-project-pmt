@@ -1,6 +1,7 @@
 package com.iscod.api_project_pmt.controllers;
 
 import com.iscod.api_project_pmt.dtos.project.*;
+import com.iscod.api_project_pmt.dtos.projectuser.ProjectUserDto;
 import com.iscod.api_project_pmt.dtos.task.SimpleTaskDto;
 import com.iscod.api_project_pmt.dtos.task.TaskRequest;
 import com.iscod.api_project_pmt.entities.Project;
@@ -646,5 +647,167 @@ public class ProjectControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jsonRequest))
                 .andExpect(status().isForbidden());
+    }
+
+    @Test
+    public void testAddUserToProject_Success() throws Exception {
+        // Arrange
+        Long userId = 1L;
+        Long projectId = 100L;
+        String newUserEmail = "newuser@example.com";
+        User user = new User();
+        user.setId(userId);
+        user.setName("Admin User");
+
+        Project project = new Project();
+        project.setId(projectId);
+        project.setName("Test Project");
+
+        ProjectUser projectUser = new ProjectUser();
+        projectUser.setRole(UserRole.ADMIN);
+
+        User newUser = new User();
+        newUser.setEmail(newUserEmail);
+
+        ProjectUser newProjectUser = new ProjectUser();
+        ProjectUserDto resultDto = new ProjectUserDto();
+
+        when(userService.getUserById(userId)).thenReturn(user);
+        when(projectService.getProjectById(projectId)).thenReturn(project);
+        when(projectUserService.getByProjectAndUser(project, user)).thenReturn(projectUser);
+        when(userService.getByEmail(newUserEmail)).thenReturn(newUser);
+        when(projectUserService.save(project, newUser, UserRole.MEMBER)).thenReturn(newProjectUser);
+        when(projectUserService.getProjectUserDto(newProjectUser)).thenReturn(resultDto);
+
+        String jsonRequest = "{\"email\":\"" + newUserEmail + "\", \"userRole\":\"MEMBER\"}";
+
+        // Act and Assert
+        mockMvc.perform(put("/projects/{id}/add-user", projectId)
+                        .header("Authorization", userId.toString())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonRequest))
+                .andExpect(status().isOk());
+
+        verify(emailService).SendProjectInvite(eq("Admin User"), eq(newUserEmail), eq("Test Project"), eq("MEMBER"));
+    }
+
+    @Test
+    public void testAddUserToProject_UserNotLoggedIn() throws Exception {
+        // Arrange
+        Long userId = 999L;
+        Long projectId = 100L;
+        when(userService.getUserById(userId)).thenReturn(null);
+
+        String jsonRequest = "{\"email\":\"new@test.com\", \"userRole\":\"MEMBER\"}";
+
+        // Act and Assert
+        mockMvc.perform(put("/projects/{id}/add-user", projectId)
+                        .header("Authorization", userId.toString())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonRequest))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    public void testAddUserToProject_ProjectNotFound() throws Exception {
+        // Arrange
+        Long userId = 1L;
+        Long projectId = 999L;
+        User user = new User();
+        user.setId(userId);
+
+        when(userService.getUserById(userId)).thenReturn(user);
+        when(projectService.getProjectById(projectId)).thenReturn(null);
+
+        String jsonRequest = "{\"email\":\"new@test.com\", \"userRole\":\"MEMBER\"}";
+
+        // Act and Assert
+        mockMvc.perform(put("/projects/{id}/add-user", projectId)
+                        .header("Authorization", userId.toString())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonRequest))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void testAddUserToProject_AccessDenied() throws Exception {
+        // Arrange
+        Long userId = 1L;
+        Long projectId = 100L;
+        User user = new User();
+        user.setId(userId);
+
+        Project project = new Project();
+        project.setId(projectId);
+
+        when(userService.getUserById(userId)).thenReturn(user);
+        when(projectService.getProjectById(projectId)).thenReturn(project);
+        when(projectUserService.getByProjectAndUser(project, user)).thenReturn(null);
+
+        String jsonRequest = "{\"email\":\"new@test.com\", \"userRole\":\"MEMBER\"}";
+
+        // Act and Assert
+        mockMvc.perform(put("/projects/{id}/add-user", projectId)
+                        .header("Authorization", userId.toString())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonRequest))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    public void testAddUserToProject_Forbidden_InsufficientRole() throws Exception {
+        // Arrange
+        Long userId = 1L;
+        Long projectId = 100L;
+        User user = new User();
+        user.setId(userId);
+
+        Project project = new Project();
+        project.setId(projectId);
+
+        ProjectUser projectUser = new ProjectUser();
+        projectUser.setRole(UserRole.MEMBER); // Member cannot add users
+
+        when(userService.getUserById(userId)).thenReturn(user);
+        when(projectService.getProjectById(projectId)).thenReturn(project);
+        when(projectUserService.getByProjectAndUser(project, user)).thenReturn(projectUser);
+
+        String jsonRequest = "{\"email\":\"new@test.com\", \"userRole\":\"MEMBER\"}";
+
+        // Act and Assert
+        mockMvc.perform(put("/projects/{id}/add-user", projectId)
+                        .header("Authorization", userId.toString())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonRequest))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    public void testAddUserToProject_NewUserNotFound() throws Exception {
+        // Arrange
+        Long userId = 1L;
+        Long projectId = 100L;
+        User user = new User();
+        user.setId(userId);
+
+        Project project = new Project();
+        project.setId(projectId);
+
+        ProjectUser projectUser = new ProjectUser();
+        projectUser.setRole(UserRole.ADMIN);
+
+        when(userService.getUserById(userId)).thenReturn(user);
+        when(projectService.getProjectById(projectId)).thenReturn(project);
+        when(projectUserService.getByProjectAndUser(project, user)).thenReturn(projectUser);
+        when(userService.getByEmail("nonexistent@test.com")).thenReturn(null);
+
+        String jsonRequest = "{\"email\":\"nonexistent@test.com\", \"userRole\":\"MEMBER\"}";
+
+        // Act and Assert
+        mockMvc.perform(put("/projects/{id}/add-user", projectId)
+                        .header("Authorization", userId.toString())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonRequest))
+                .andExpect(status().isNotFound());
     }
 }
