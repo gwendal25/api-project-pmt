@@ -15,4 +15,6 @@ public interface ProjectUserService {
     ProjectUser save(Project project, User user, UserRole role);
 
     ProjectUserDto getProjectUserDto(ProjectUser projectUser);
+
+    void updateUserRole(ProjectUser projectUser, UserRole role);
 }

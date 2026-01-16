@@ -43,4 +43,9 @@ public class ProjectUserServiceImpl implements ProjectUserService {
         return projectUserMapper.toDto(projectUser);
     }
 
+    @Override
+    public void updateUserRole(ProjectUser projectUser, UserRole role) {
+        projectUser.setRole(role);
+        projectUserRepository.save(projectUser);
+    }
 }

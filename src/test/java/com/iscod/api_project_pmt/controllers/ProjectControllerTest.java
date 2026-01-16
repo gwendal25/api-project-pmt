@@ -41,46 +41,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ExtendWith(MockitoExtension.class)
 @WebMvcTest(ProjectController.class)
 public class ProjectControllerTest {
-
-    @MockitoBean
-    private UserRepository userRepository;
-
-    @MockitoBean
-    private SimpleProjectWithUserRolesMapper simpleProjectWithUserRolesMapper;
-
     @Autowired
     private MockMvc mockMvc;
-
     @MockitoBean
-    private ProjectRepository projectRepository;
-
-    @MockitoBean
-    private ProjectUserRepository projectUserRepository;
-
-    @MockitoBean
-    private ProjectMapper projectMapper;
-
-    @MockitoBean
-    private ProjectUserMapper projectUserMapper;
-
-    @MockitoBean
-    private ProjectUserRoleMapper projectUserRoleMapper;
-
-    @MockitoBean
-    private TaskMapper taskMapper;
-
-    @MockitoBean
-    private SimpleTaskMapper simpleTaskMapper;
-
-    @MockitoBean
-    private EmailService emailService;
-
-    @MockitoBean
-    private TaskRepository taskRepository;
-
-    @MockitoBean
-    private SimpleProjectMapper simpleProjectMapper;
-
+    EmailService emailService;
     @MockitoBean
     ProjectService projectService;
     @MockitoBean
@@ -207,8 +171,6 @@ public class ProjectControllerTest {
         dto2.setStartDate(project2.getStartDate());
 
         when(projectService.getAllProjects()).thenReturn(Arrays.asList(dto1, dto2));
-        when(simpleProjectMapper.toDto(project1)).thenReturn(dto1);
-        when(simpleProjectMapper.toDto(project2)).thenReturn(dto2);
 
         // Act and Assert
         mockMvc.perform(get("/projects")
