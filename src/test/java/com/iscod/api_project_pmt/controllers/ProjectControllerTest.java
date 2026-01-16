@@ -772,4 +772,130 @@ public class ProjectControllerTest {
                         .content(jsonRequest))
                 .andExpect(status().isNotFound());
     }
+
+    @Test
+    public void testChangeUserRole_Success() throws Exception {
+        // Arrange
+        Long requesterId = 1L;
+        Long projectId = 100L;
+        Long targetUserId = 2L;
+        User requester = new User();
+        requester.setId(requesterId);
+
+        Project project = new Project();
+        project.setId(projectId);
+
+        ProjectUser requesterProjectUser = new ProjectUser();
+        requesterProjectUser.setRole(UserRole.ADMIN);
+
+        User targetUser = new User();
+        targetUser.setId(targetUserId);
+
+        ProjectUser targetProjectUser = new ProjectUser();
+        ProjectUserDto resultDto = new ProjectUserDto();
+
+        when(userService.getUserById(requesterId)).thenReturn(requester);
+        when(projectService.getProjectById(projectId)).thenReturn(project);
+        when(projectUserService.getByProjectAndUser(project, requester)).thenReturn(requesterProjectUser);
+        when(userService.getUserById(targetUserId)).thenReturn(targetUser);
+        when(projectUserService.getByProjectAndUser(project, targetUser)).thenReturn(targetProjectUser);
+        when(projectUserService.getProjectUserDto(targetProjectUser)).thenReturn(resultDto);
+
+        String jsonRequest = "{\"userId\":2, \"userRole\":\"MEMBER\"}";
+
+        // Act and Assert
+        mockMvc.perform(put("/projects/{id}/change-user-role", projectId)
+                        .header("Authorization", requesterId.toString())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonRequest))
+                .andExpect(status().isOk());
+
+        verify(projectUserService).updateUserRole(targetProjectUser, UserRole.MEMBER);
+    }
+
+    @Test
+    public void testChangeUserRole_UserNotLoggedIn() throws Exception {
+        Long userId = 999L;
+        when(userService.getUserById(userId)).thenReturn(null);
+        String jsonRequest = "{\"userId\":2, \"userRole\":\"MEMBER\"}";
+
+        mockMvc.perform(put("/projects/100/change-user-role")
+                        .header("Authorization", userId.toString())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonRequest))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    public void testChangeUserRole_ProjectNotFound() throws Exception {
+        Long userId = 1L;
+        User user = new User();
+        when(userService.getUserById(userId)).thenReturn(user);
+        when(projectService.getProjectById(999L)).thenReturn(null);
+        String jsonRequest = "{\"userId\":2, \"userRole\":\"MEMBER\"}";
+
+        mockMvc.perform(put("/projects/999/change-user-role")
+                        .header("Authorization", userId.toString())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonRequest))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void testChangeUserRole_RequesterNotInProject() throws Exception {
+        Long userId = 1L;
+        User user = new User();
+        Project project = new Project();
+        when(userService.getUserById(userId)).thenReturn(user);
+        when(projectService.getProjectById(100L)).thenReturn(project);
+        when(projectUserService.getByProjectAndUser(project, user)).thenReturn(null);
+        String jsonRequest = "{\"userId\":2, \"userRole\":\"MEMBER\"}";
+
+        mockMvc.perform(put("/projects/100/change-user-role")
+                        .header("Authorization", userId.toString())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonRequest))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    public void testChangeUserRole_Forbidden_InsufficientRole() throws Exception {
+        Long userId = 1L;
+        User user = new User();
+        Project project = new Project();
+        ProjectUser pu = new ProjectUser();
+        pu.setRole(UserRole.MEMBER);
+
+        when(userService.getUserById(userId)).thenReturn(user);
+        when(projectService.getProjectById(100L)).thenReturn(project);
+        when(projectUserService.getByProjectAndUser(project, user)).thenReturn(pu);
+        String jsonRequest = "{\"userId\":2, \"userRole\":\"ADMIN\"}";
+
+        mockMvc.perform(put("/projects/100/change-user-role")
+                        .header("Authorization", userId.toString())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonRequest))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    public void testChangeUserRole_TargetUserNotFound() throws Exception {
+        Long userId = 1L;
+        User user = new User();
+        Project project = new Project();
+        ProjectUser pu = new ProjectUser();
+        pu.setRole(UserRole.ADMIN);
+
+        when(userService.getUserById(userId)).thenReturn(user);
+        when(projectService.getProjectById(100L)).thenReturn(project);
+        when(projectUserService.getByProjectAndUser(project, user)).thenReturn(pu);
+        when(userService.getUserById(2L)).thenReturn(null);
+        String jsonRequest = "{\"userId\":2, \"userRole\":\"MEMBER\"}";
+
+        mockMvc.perform(put("/projects/100/change-user-role")
+                        .header("Authorization", userId.toString())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonRequest))
+                .andExpect(status().isNotFound());
+    }
 }
