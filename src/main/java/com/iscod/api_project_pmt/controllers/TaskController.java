@@ -14,8 +14,7 @@ import com.iscod.api_project_pmt.repositories.ProjectRepository;
 import com.iscod.api_project_pmt.repositories.ProjectUserRepository;
 import com.iscod.api_project_pmt.repositories.TaskRepository;
 import com.iscod.api_project_pmt.repositories.UserRepository;
-import com.iscod.api_project_pmt.services.EmailService;
-import com.iscod.api_project_pmt.services.TaskHistoryEntryService;
+import com.iscod.api_project_pmt.services.*;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,15 +28,16 @@ import java.util.List;
 @CrossOrigin(origins = "http://localhost:4200")
 @RequestMapping("/tasks")
 public class TaskController {
-    private final ProjectRepository projectRepository;
     private final ProjectUserRepository projectUserRepository;
     private final TaskRepository taskRepository;
     private final UserRepository userRepository;
-    private final TaskMapper taskMapper;
     private final SimpleTaskMapper simpleTaskMapper;
     private final ProjectMapper projectMapper;
     private final TaskHistoryEntryService taskHistoryEntryService;
     private final EmailService emailService;
+    private final UserService userService;
+    private final TaskService taskService;
+    private final ProjectUserService projectUserService;
 
     /**
      * Cette méthode récupère les données d'une tâche et les renvoie
@@ -47,24 +47,22 @@ public class TaskController {
      */
     @GetMapping("/{id}")
     public ResponseEntity<TaskDto> getTask(@PathVariable Long id, @RequestHeader("Authorization") String userIdStr) {
-        Long userId = Long.valueOf(userIdStr);
-        User user = userRepository.findById(userId).orElse(null);
+        User user = userService.getUserById(Long.valueOf(userIdStr));
         if(user == null) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied : You need to be logged in to access this project");
         }
 
-        Task task = taskRepository.findById(id).orElse(null);
+        Task task = taskService.getTaskById(id);
         if(task == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Task not found : This is not the task you are looking for");
         }
 
-        Project project = task.getProject();
-        ProjectUser projectUser = projectUserRepository.findByProjectAndUser(project, user).orElse(null);
+        ProjectUser projectUser = projectUserService.getByProjectAndUser(task.getProject(), user);
         if(projectUser == null) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied : You do not have access to this project");
         }
 
-        return ResponseEntity.ok(taskMapper.toDtoWithHistory(task));
+        return ResponseEntity.ok(taskService.getTaskDto(task));
     }
 
     /**
@@ -75,24 +73,22 @@ public class TaskController {
      */
     @GetMapping("/{id}/no-history")
     public ResponseEntity<SimpleTaskDto> getTaskWithoutHistory(@PathVariable Long id, @RequestHeader("Authorization") String userIdStr) {
-        Long userId = Long.valueOf(userIdStr);
-        User user = userRepository.findById(userId).orElse(null);
+        User user = userService.getUserById(Long.valueOf(userIdStr));
         if(user == null) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied : You need to be logged in to access this project");
         }
 
-        Task task = taskRepository.findById(id).orElse(null);
+        Task task = taskService.getTaskById(id);
         if(task == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Task not found : This is not the task you are looking for");
         }
 
-        Project project = task.getProject();
-        ProjectUser projectUser = projectUserRepository.findByProjectAndUser(project, user).orElse(null);
+        ProjectUser projectUser = projectUserService.getByProjectAndUser(task.getProject(), user);
         if(projectUser == null) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied : You do not have access to this project");
         }
 
-        return ResponseEntity.ok(simpleTaskMapper.toDto(task));
+        return ResponseEntity.ok(taskService.getSimpleTaskDto(task));
     }
 
     /**

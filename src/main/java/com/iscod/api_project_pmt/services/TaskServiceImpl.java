@@ -1,6 +1,7 @@
 package com.iscod.api_project_pmt.services;
 
 import com.iscod.api_project_pmt.dtos.task.SimpleTaskDto;
+import com.iscod.api_project_pmt.dtos.task.TaskDto;
 import com.iscod.api_project_pmt.dtos.task.TaskRequest;
 import com.iscod.api_project_pmt.entities.Project;
 import com.iscod.api_project_pmt.entities.Task;
@@ -26,6 +27,16 @@ public class TaskServiceImpl implements TaskService {
         Task task = taskMapper.toTask(taskRequest);
         task.setProject(project);
         return taskRepository.save(task);
+    }
+
+    @Override
+    public Task getTaskById(Long id) {
+        return taskRepository.findById(id).orElse(null);
+    }
+
+    @Override
+    public TaskDto getTaskDto(Task task) {
+        return taskMapper.toDtoWithHistory(task);
     }
 
     @Override
