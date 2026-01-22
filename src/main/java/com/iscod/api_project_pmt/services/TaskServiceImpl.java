@@ -1,11 +1,14 @@
 package com.iscod.api_project_pmt.services;
 
+import com.iscod.api_project_pmt.dtos.task.ProjectTaskDto;
 import com.iscod.api_project_pmt.dtos.task.SimpleTaskDto;
 import com.iscod.api_project_pmt.dtos.task.TaskDto;
 import com.iscod.api_project_pmt.dtos.task.TaskRequest;
 import com.iscod.api_project_pmt.entities.Project;
 import com.iscod.api_project_pmt.entities.Task;
 import com.iscod.api_project_pmt.entities.TaskHistoryEntry;
+import com.iscod.api_project_pmt.entities.User;
+import com.iscod.api_project_pmt.mappers.ProjectMapper;
 import com.iscod.api_project_pmt.mappers.SimpleTaskMapper;
 import com.iscod.api_project_pmt.mappers.TaskMapper;
 import com.iscod.api_project_pmt.repositories.TaskRepository;
@@ -24,6 +27,9 @@ public class TaskServiceImpl implements TaskService {
 
     @Autowired
     SimpleTaskMapper simpleTaskMapper;
+
+    @Autowired
+    ProjectMapper projectMapper;
 
     @Autowired
     TaskHistoryEntryService taskHistoryEntryService;
@@ -51,6 +57,11 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
+    public ProjectTaskDto getProjectTaskDto(Task task, User user) {
+        return projectMapper.toProjectTaskDto(task, user);
+    }
+
+    @Override
     public Task addTaskHistoryEntry(TaskRequest taskRequest, Task task) {
         Task newTask = new Task();
         taskMapper.update(taskRequest, newTask);
@@ -61,5 +72,11 @@ public class TaskServiceImpl implements TaskService {
             return taskRepository.save(task);
         }
         return task;
+    }
+
+    @Override
+    public Task addUser(Task task, User user) {
+        task.setUser(user);
+        return taskRepository.save(task);
     }
 }

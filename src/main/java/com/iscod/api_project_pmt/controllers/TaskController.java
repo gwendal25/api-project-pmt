@@ -31,7 +31,6 @@ public class TaskController {
     private final ProjectUserRepository projectUserRepository;
     private final TaskRepository taskRepository;
     private final UserRepository userRepository;
-    private final ProjectMapper projectMapper;
     private final EmailService emailService;
     private final UserService userService;
     private final TaskService taskService;
@@ -130,64 +129,82 @@ public class TaskController {
      */
     @PutMapping("/{id}/assign")
     public ResponseEntity<ProjectTaskDto> assignTask(@PathVariable Long id, @RequestBody TaskUserRequest taskUserRequest, @RequestHeader("Authorization") String userIdStr) {
-        Long userId = Long.valueOf(userIdStr);
-        User user = userRepository.findById(userId).orElse(null);
+        User user = userService.getUserById(Long.valueOf(userIdStr));
         if(user == null) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied : You need to be logged in to access this project");
         }
 
-        Task task = taskRepository.findById(id).orElse(null);
+        Task task = taskService.getTaskById(id);
         if(task == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Task not found : This is not the task you are looking for");
         }
 
-        Project project = task.getProject();
-        ProjectUser projectUser = projectUserRepository.findByProjectAndUser(project, user).orElse(null);
+        ProjectUser projectUser = projectUserService.getByProjectAndUser(task.getProject(), user);
         if(projectUser == null) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied : You do not have access to this project");
         }
 
-        UserRole role = projectUser.getRole();
-        if(role == UserRole.OBSERVER) {
+        if(projectUser.getRole() == UserRole.OBSERVER) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied : users of role observer cannot assign tasks");
         }
 
-        User oldUser = task.getUser();
-        if(oldUser != null) {
-            oldUser.UnassignTask(task);
-            userRepository.save(oldUser);
-        }
         Long newUserId = taskUserRequest.getUserId();
-        if(newUserId == -1) {
-            if(oldUser != null) {
-                task.setUser(null);
-                task = taskRepository.save(task);
-            }
-            return ResponseEntity.ok(projectMapper.toProjectTaskDto(task, new User(-1L, "")));
-        }
-        User newUser = userRepository.findById(newUserId).orElse(null);
+        User newUser = userService.getUserById(newUserId);
         if(newUser == null) {
-            if(oldUser != null) {
-                task.setUser(null);
-                task = taskRepository.save(task);
-            }
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found : The user you are trying to assign the task to could not be found");
         }
 
-        ProjectUser newProjectUser = projectUserRepository.findByProjectAndUser(project, newUser).orElse(null);
+        ProjectUser newProjectUser = projectUserService.getByProjectAndUser(task.getProject(), newUser);
         if(newProjectUser == null) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Access denied : The user isn't part of this projet");
         }
 
-        newUser.AssignTask(task);
-        newUser = userRepository.save(newUser);
-        task.setUser(newUser);
-        task = taskRepository.save(task);
+        User oldUser = task.getUser();
+        if(oldUser != null && oldUser.getId().equals(newUserId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Incorrect request : The user you are trying to assign the task to is already assigned to the task");
+        }
 
-        List<String> tos = task.getUsersTaskAssignedNotifiedMails();
-        emailService.SendTaskAssignNotificationBulk(tos, project.getName(), task.getName(), task.getUser().getName());
+        if(oldUser != null) {
+            userService.unassignTask(oldUser, task);
+        }
+        newUser = userService.assignTask(newUser, task);
+        task = taskService.addUser(task, newUser);
 
-        return ResponseEntity.ok(projectMapper.toProjectTaskDto(task, newUser));
+        emailService.SendTaskAssignNotificationBulk(task.getUsersTaskAssignedNotifiedMails(),
+                task.getProject().getName(),
+                task.getName(),
+                task.getUser().getName());
+        return ResponseEntity.ok(taskService.getProjectTaskDto(task, newUser));
+    }
+
+    @PutMapping("/{id}/unassign")
+    public ResponseEntity<ProjectTaskDto> unassignTask(@PathVariable Long id, @RequestHeader("Authorization") String userIdStr) {
+        User user = userService.getUserById(Long.valueOf(userIdStr));
+        if(user == null) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied : You need to be logged in to access this project");
+        }
+
+        Task task = taskService.getTaskById(id);
+        if(task == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Task not found : This is not the task you are looking for");
+        }
+
+        ProjectUser projectUser = projectUserService.getByProjectAndUser(task.getProject(), user);
+        if(projectUser == null) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied : You do not have access to this project");
+        }
+
+        if(projectUser.getRole() == UserRole.OBSERVER) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied : users of role observer cannot assign tasks");
+        }
+
+        User oldUser = task.getUser();
+        if(oldUser == null) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Incorrect request : The task is not assigned to any user");
+        }
+
+        userService.unassignTask(oldUser, task);
+        return ResponseEntity.ok(taskService.getProjectTaskDto(task, null));
     }
 
     /**

@@ -1,5 +1,6 @@
 package com.iscod.api_project_pmt.services;
 
+import com.iscod.api_project_pmt.entities.Task;
 import com.iscod.api_project_pmt.entities.User;
 import com.iscod.api_project_pmt.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,5 +19,17 @@ public class UserServiceImpl implements UserService {
     @Override
     public User getByEmail(String email) {
         return userRepository.findByEmail(email).orElse(null);
+    }
+
+    @Override
+    public User assignTask(User user, Task task) {
+        user.AssignTask(task);
+        return userRepository.save(user);
+    }
+
+    @Override
+    public void unassignTask(User user, Task task) {
+        user.UnassignTask(task);
+        userRepository.save(user);
     }
 }
