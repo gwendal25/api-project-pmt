@@ -31,9 +31,7 @@ public class TaskController {
     private final ProjectUserRepository projectUserRepository;
     private final TaskRepository taskRepository;
     private final UserRepository userRepository;
-    private final SimpleTaskMapper simpleTaskMapper;
     private final ProjectMapper projectMapper;
-    private final TaskHistoryEntryService taskHistoryEntryService;
     private final EmailService emailService;
     private final UserService userService;
     private final TaskService taskService;
@@ -100,30 +98,27 @@ public class TaskController {
      */
     @PutMapping("/{id}")
     public ResponseEntity<SimpleTaskDto> updateTask(@PathVariable Long id, @RequestBody TaskRequest taskRequest, @RequestHeader("Authorization") String userIdStr) {
-        Long userId = Long.valueOf(userIdStr);
-        User user = userRepository.findById(userId).orElse(null);
+        User user = userService.getUserById(Long.valueOf(userIdStr));
         if(user == null) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied : You need to be logged in to access this project");
         }
 
-        Task task = taskRepository.findById(id).orElse(null);
+        Task task = taskService.getTaskById(id);
         if(task == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Task not found : This is not the task you are looking for");
         }
 
-        Project project = task.getProject();
-        ProjectUser projectUser = projectUserRepository.findByProjectAndUser(project, user).orElse(null);
+        ProjectUser projectUser = projectUserService.getByProjectAndUser(task.getProject(), user);
         if(projectUser == null) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied : You do not have access to this project");
         }
 
-        UserRole role = projectUser.getRole();
-        if(role == UserRole.OBSERVER) {
+        if(projectUser.getRole() == UserRole.OBSERVER) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied : users of role observer cannot update tasks");
         }
 
-        taskHistoryEntryService.AddTaskHistoryEntryToTask(taskRequest, task);
-        return ResponseEntity.ok(simpleTaskMapper.toDto(task));
+        task = taskService.addTaskHistoryEntry(taskRequest, task);
+        return ResponseEntity.ok(taskService.getSimpleTaskDto(task));
     }
 
     /**

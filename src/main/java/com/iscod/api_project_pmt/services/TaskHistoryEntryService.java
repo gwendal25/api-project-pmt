@@ -1,8 +1,8 @@
 package com.iscod.api_project_pmt.services;
 
-import com.iscod.api_project_pmt.dtos.task.TaskRequest;
 import com.iscod.api_project_pmt.entities.Task;
+import com.iscod.api_project_pmt.entities.TaskHistoryEntry;
 
 public interface TaskHistoryEntryService {
-    void AddTaskHistoryEntryToTask(TaskRequest taskRequest, Task task);
+    TaskHistoryEntry save(Task task);
 }

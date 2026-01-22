@@ -5,11 +5,14 @@ import com.iscod.api_project_pmt.dtos.task.TaskDto;
 import com.iscod.api_project_pmt.dtos.task.TaskRequest;
 import com.iscod.api_project_pmt.entities.Project;
 import com.iscod.api_project_pmt.entities.Task;
+import com.iscod.api_project_pmt.entities.TaskHistoryEntry;
 import com.iscod.api_project_pmt.mappers.SimpleTaskMapper;
 import com.iscod.api_project_pmt.mappers.TaskMapper;
 import com.iscod.api_project_pmt.repositories.TaskRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import java.util.Date;
 
 @Component
 public class TaskServiceImpl implements TaskService {
@@ -21,6 +24,9 @@ public class TaskServiceImpl implements TaskService {
 
     @Autowired
     SimpleTaskMapper simpleTaskMapper;
+
+    @Autowired
+    TaskHistoryEntryService taskHistoryEntryService;
 
     @Override
     public Task save(TaskRequest taskRequest, Project project) {
@@ -42,5 +48,18 @@ public class TaskServiceImpl implements TaskService {
     @Override
     public SimpleTaskDto getSimpleTaskDto(Task task) {
         return simpleTaskMapper.toDto(task);
+    }
+
+    @Override
+    public Task addTaskHistoryEntry(TaskRequest taskRequest, Task task) {
+        Task newTask = new Task();
+        taskMapper.update(taskRequest, newTask);
+        if(!newTask.equals(task)) {
+            TaskHistoryEntry taskHistoryEntry = taskHistoryEntryService.save(task);
+            taskMapper.update(taskRequest, task);
+            task.addTaskHistoryEntry(taskHistoryEntry);
+            return taskRepository.save(task);
+        }
+        return task;
     }
 }

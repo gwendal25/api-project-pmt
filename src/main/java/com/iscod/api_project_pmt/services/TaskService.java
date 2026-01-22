@@ -14,4 +14,6 @@ public interface TaskService {
     TaskDto getTaskDto(Task task);
 
     SimpleTaskDto getSimpleTaskDto(Task task);
+
+    Task addTaskHistoryEntry(TaskRequest taskRequest, Task task);
 }
