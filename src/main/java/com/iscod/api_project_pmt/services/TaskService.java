@@ -22,4 +22,8 @@ public interface TaskService {
     Task addTaskHistoryEntry(TaskRequest taskRequest, Task task);
 
     Task addUser(Task task, User user);
+
+    void addNotificationUser(Task task, User user);
+
+    void removeNotificationUser(Task task, User user);
 }
