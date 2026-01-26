@@ -1,0 +1,52 @@
+services:
+  mysql-db:
+    container_name: tmp-mysql-spring-boot
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    volumes:
+      - db:/var/lib/mysql
+    ports:
+      - "3305:3306"
+    networks:
+      - spring-cloud-network
+    restart: unless-stopped
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "mysqladmin ping -h 127.0.0.1 -P 3306 --protocol=tcp -u root -p\"$MYSQL_ROOT_PASSWORD\" || exit 1"
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 60s
+
+
+  project-server:
+    container_name: tmp-server
+    build: .
+    ports:
+      - "8081:8081"
+    depends_on:
+      mysql-db:
+        condition: service_healthy
+    environment:
+      MYSQL_HOST: ${MYSQL_HOST}
+      MYSQL_URL: jdbc:mysql://${MYSQL_HOST}:${MYSQL_PORT}/${MYSQL_DATABASE}?${MYSQL_JDBC_PARAMS}
+      MYSQL_USERNAME: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      SERVER_PORT: ${SERVER_PORT}
+    networks:
+      - spring-cloud-network
+
+networks:
+  spring-cloud-network:
+    driver: bridge
+
+volumes:
+  db:
+
