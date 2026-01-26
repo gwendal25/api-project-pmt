@@ -28,9 +28,6 @@ import java.util.List;
 @CrossOrigin(origins = "http://localhost:4200")
 @RequestMapping("/tasks")
 public class TaskController {
-    private final ProjectUserRepository projectUserRepository;
-    private final TaskRepository taskRepository;
-    private final UserRepository userRepository;
     private final EmailService emailService;
     private final UserService userService;
     private final TaskService taskService;
@@ -204,6 +201,7 @@ public class TaskController {
         }
 
         userService.unassignTask(oldUser, task);
+        taskService.removeUser(task);
         return ResponseEntity.ok(taskService.getProjectTaskDto(task, null));
     }
 
@@ -237,7 +235,7 @@ public class TaskController {
         }
         else {
             taskService.removeNotificationUser(task, user);
-            userService.addNotificationTask(user, task);
+            userService.removeNotificationTask(user, task);
         }
 
         return ResponseEntity.ok(new TaskSetNotificationDto(taskNotificationRequest.getIsNotified()));

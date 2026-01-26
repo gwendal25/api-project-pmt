@@ -23,6 +23,8 @@ public interface TaskService {
 
     Task addUser(Task task, User user);
 
+    Task removeUser(Task task);
+
     void addNotificationUser(Task task, User user);
 
     void removeNotificationUser(Task task, User user);

@@ -81,6 +81,12 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
+    public Task removeUser(Task task) {
+        task.setUser(null);
+        return taskRepository.save(task);
+    }
+
+    @Override
     public void addNotificationUser(Task task, User user) {
         task.addNotificationUser(user);
         taskRepository.save(task);
