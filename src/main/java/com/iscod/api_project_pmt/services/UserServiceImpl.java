@@ -32,4 +32,16 @@ public class UserServiceImpl implements UserService {
         user.UnassignTask(task);
         userRepository.save(user);
     }
+
+    @Override
+    public void addNotificationTask(User user, Task task) {
+        user.addNotificationTask(task);
+        userRepository.save(user);
+    }
+
+    @Override
+    public void removeNotificationTask(User user, Task task) {
+        user.removeNotificationTask(task);
+        userRepository.save(user);
+    }
 }

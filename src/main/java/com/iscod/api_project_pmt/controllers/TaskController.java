@@ -232,15 +232,13 @@ public class TaskController {
         }
 
         if(taskNotificationRequest.getIsNotified()){
-            task.addNotificationUser(user);
-            user.addNotificationTask(task);
+            taskService.addNotificationUser(task, user);
+            userService.addNotificationTask(user, task);
         }
         else {
-            task.removeNotificationUser(user);
-            user.removeNotificationTask(task);
+            taskService.removeNotificationUser(task, user);
+            userService.addNotificationTask(user, task);
         }
-        taskRepository.save(task);
-        userRepository.save(user);
 
         return ResponseEntity.ok(new TaskSetNotificationDto(taskNotificationRequest.getIsNotified()));
     }

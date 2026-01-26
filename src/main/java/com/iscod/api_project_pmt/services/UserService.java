@@ -11,4 +11,8 @@ public interface UserService {
     User assignTask(User user, Task task);
 
     void unassignTask(User user, Task task);
+
+    void addNotificationTask(User user, Task task);
+
+    void removeNotificationTask(User user, Task task);
 }
