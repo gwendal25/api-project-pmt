@@ -880,4 +880,150 @@ class TaskControllerTest {
         );
         verify(taskService).getProjectTaskDto(taskAfterAddUser, newUser);
     }
+
+    @Test
+    void unassignTask_returns400_whenAuthorizationHeaderIsNotANumber() throws Exception {
+        Long taskId = 42L;
+
+        mockMvc.perform(put("/tasks/{id}/unassign", taskId)
+                        .header("Authorization", "not-a-number"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void unassignTask_returns403_whenUserIsNull() throws Exception {
+        Long taskId = 42L;
+
+        when(userService.getUserById(10L)).thenReturn(null);
+
+        mockMvc.perform(put("/tasks/{id}/unassign", taskId)
+                        .header("Authorization", "10"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void unassignTask_returns404_whenTaskNotFound() throws Exception {
+        Long taskId = 42L;
+
+        User user = new User();
+        user.setId(10L);
+
+        when(userService.getUserById(10L)).thenReturn(user);
+        when(taskService.getTaskById(taskId)).thenReturn(null);
+
+        mockMvc.perform(put("/tasks/{id}/unassign", taskId)
+                        .header("Authorization", "10"))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void unassignTask_returns403_whenUserNotInProject() throws Exception {
+        Long taskId = 42L;
+
+        User user = new User();
+        user.setId(10L);
+
+        Project project = new Project();
+        project.setId(99L);
+
+        Task task = new Task();
+        task.setId(taskId);
+        task.setProject(project);
+
+        when(userService.getUserById(10L)).thenReturn(user);
+        when(taskService.getTaskById(taskId)).thenReturn(task);
+        when(projectUserService.getByProjectAndUser(project, user)).thenReturn(null);
+
+        mockMvc.perform(put("/tasks/{id}/unassign", taskId)
+                        .header("Authorization", "10"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void unassignTask_returns403_whenRoleIsObserver() throws Exception {
+        Long taskId = 42L;
+
+        User user = new User();
+        user.setId(10L);
+
+        Project project = new Project();
+        project.setId(99L);
+
+        Task task = new Task();
+        task.setId(taskId);
+        task.setProject(project);
+
+        ProjectUser projectUser = new ProjectUser(project, user, UserRole.OBSERVER);
+
+        when(userService.getUserById(10L)).thenReturn(user);
+        when(taskService.getTaskById(taskId)).thenReturn(task);
+        when(projectUserService.getByProjectAndUser(project, user)).thenReturn(projectUser);
+
+        mockMvc.perform(put("/tasks/{id}/unassign", taskId)
+                        .header("Authorization", "10"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void unassignTask_returns403_whenTaskNotAssignedToAnyUser() throws Exception {
+        Long taskId = 42L;
+
+        User user = new User();
+        user.setId(10L);
+
+        Project project = new Project();
+        project.setId(99L);
+
+        Task task = new Task();
+        task.setId(taskId);
+        task.setProject(project);
+        task.setUser(null);
+
+        ProjectUser projectUser = new ProjectUser(project, user, UserRole.MEMBER);
+
+        when(userService.getUserById(10L)).thenReturn(user);
+        when(taskService.getTaskById(taskId)).thenReturn(task);
+        when(projectUserService.getByProjectAndUser(project, user)).thenReturn(projectUser);
+
+        mockMvc.perform(put("/tasks/{id}/unassign", taskId)
+                        .header("Authorization", "10"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void unassignTask_returns200_andUnassignsUser_whenAccessGranted() throws Exception {
+        Long taskId = 42L;
+
+        User requester = new User();
+        requester.setId(10L);
+
+        User oldUser = new User();
+        oldUser.setId(20L);
+
+        Project project = new Project();
+        project.setId(99L);
+
+        Task task = new Task();
+        task.setId(taskId);
+        task.setProject(project);
+        task.setUser(oldUser);
+
+        ProjectUser projectUser = new ProjectUser(project, requester, UserRole.MEMBER);
+
+        ProjectTaskDto dto = new ProjectTaskDto();
+        dto.setId(taskId);
+        dto.setName("Task A");
+
+        when(userService.getUserById(10L)).thenReturn(requester);
+        when(taskService.getTaskById(taskId)).thenReturn(task);
+        when(projectUserService.getByProjectAndUser(project, requester)).thenReturn(projectUser);
+        when(taskService.getProjectTaskDto(task, null)).thenReturn(dto);
+
+        mockMvc.perform(put("/tasks/{id}/unassign", taskId)
+                        .header("Authorization", "10")
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(42))
+                .andExpect(jsonPath("$.name").value("Task A"));
+    }
 }
