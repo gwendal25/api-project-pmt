@@ -7,6 +7,7 @@ import com.iscod.api_project_pmt.entities.Task;
 import com.iscod.api_project_pmt.entities.User;
 import com.iscod.api_project_pmt.enums.UserRole;
 import com.iscod.api_project_pmt.services.*;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -32,8 +33,14 @@ public class TaskController {
      * @return les données de la tâche avec id, nom, description, priorité, status, date de fin et historique
      */
     @GetMapping("/{id}")
-    public ResponseEntity<TaskDto> getTask(@PathVariable Long id, @RequestHeader("Authorization") String userIdStr) {
-        User user = userService.getUserById(Long.valueOf(userIdStr));
+    public ResponseEntity<TaskDto> getTask(@PathVariable Long id, @Valid @RequestHeader("Authorization") String userIdStr) {
+        Long userId;
+        try {
+            userId = Long.valueOf(userIdStr);
+        } catch (NumberFormatException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Incorrect request : The token you provided is not a valid number");
+        }
+        User user = userService.getUserById(userId);
         if(user == null) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied : You need to be logged in to access this project");
         }
