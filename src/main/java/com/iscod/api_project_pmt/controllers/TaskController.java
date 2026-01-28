@@ -2,18 +2,10 @@ package com.iscod.api_project_pmt.controllers;
 
 import com.iscod.api_project_pmt.dtos.task.*;
 import com.iscod.api_project_pmt.dtos.user.TaskUserRequest;
-import com.iscod.api_project_pmt.entities.Project;
 import com.iscod.api_project_pmt.entities.ProjectUser;
 import com.iscod.api_project_pmt.entities.Task;
 import com.iscod.api_project_pmt.entities.User;
 import com.iscod.api_project_pmt.enums.UserRole;
-import com.iscod.api_project_pmt.mappers.ProjectMapper;
-import com.iscod.api_project_pmt.mappers.SimpleTaskMapper;
-import com.iscod.api_project_pmt.mappers.TaskMapper;
-import com.iscod.api_project_pmt.repositories.ProjectRepository;
-import com.iscod.api_project_pmt.repositories.ProjectUserRepository;
-import com.iscod.api_project_pmt.repositories.TaskRepository;
-import com.iscod.api_project_pmt.repositories.UserRepository;
 import com.iscod.api_project_pmt.services.*;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
