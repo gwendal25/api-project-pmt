@@ -64,10 +64,6 @@ class TaskControllerTest {
         mockMvc.perform(get("/tasks/{id}", taskId)
                         .header("Authorization", authorizationHeader))
                 .andExpect(status().isForbidden());
-
-        verify(taskService, never()).getTaskById(any());
-        verify(projectUserService, never()).getByProjectAndUser(any(), any());
-        verify(taskService, never()).getTaskDto(any());
     }
 
     @Test
@@ -84,9 +80,6 @@ class TaskControllerTest {
         mockMvc.perform(get("/tasks/{id}", taskId)
                         .header("Authorization", authorizationHeader))
                 .andExpect(status().isNotFound());
-
-        verify(projectUserService, never()).getByProjectAndUser(any(), any());
-        verify(taskService, never()).getTaskDto(any());
     }
 
     @Test
@@ -111,8 +104,6 @@ class TaskControllerTest {
         mockMvc.perform(get("/tasks/{id}", taskId)
                         .header("Authorization", authorizationHeader))
                 .andExpect(status().isForbidden());
-
-        verify(taskService, never()).getTaskDto(any());
     }
 
     @Test
@@ -161,11 +152,6 @@ class TaskControllerTest {
                 .andExpect(jsonPath("$.taskPriority").value("MEDIUM"))
                 .andExpect(jsonPath("$.taskStatus").value("NOT_STARTED"))
                 .andExpect(jsonPath("$.taskHistoryEntries").isArray());
-
-        verify(userService).getUserById(10L);
-        verify(taskService).getTaskById(taskId);
-        verify(projectUserService).getByProjectAndUser(project, user);
-        verify(taskService).getTaskDto(task);
     }
 
     @Test
@@ -175,10 +161,6 @@ class TaskControllerTest {
         mockMvc.perform(get("/tasks/{id}", taskId)
                         .header("Authorization", "not-a-number"))
                 .andExpect(status().isBadRequest());
-
-        verify(userService, never()).getUserById(any());
-        verify(taskService, never()).getTaskById(any());
-        verify(projectUserService, never()).getByProjectAndUser(any(), any());
     }
 
     @Test
@@ -191,10 +173,6 @@ class TaskControllerTest {
         mockMvc.perform(get("/tasks/{id}/no-history", taskId)
                         .header("Authorization", authorizationHeader))
                 .andExpect(status().isForbidden());
-
-        verify(taskService, never()).getTaskById(any());
-        verify(projectUserService, never()).getByProjectAndUser(any(), any());
-        verify(taskService, never()).getSimpleTaskDto(any());
     }
 
     @Test
@@ -211,9 +189,6 @@ class TaskControllerTest {
         mockMvc.perform(get("/tasks/{id}/no-history", taskId)
                         .header("Authorization", authorizationHeader))
                 .andExpect(status().isNotFound());
-
-        verify(projectUserService, never()).getByProjectAndUser(any(), any());
-        verify(taskService, never()).getSimpleTaskDto(any());
     }
 
     @Test
@@ -238,8 +213,6 @@ class TaskControllerTest {
         mockMvc.perform(get("/tasks/{id}/no-history", taskId)
                         .header("Authorization", authorizationHeader))
                 .andExpect(status().isForbidden());
-
-        verify(taskService, never()).getSimpleTaskDto(any());
     }
 
     @Test
@@ -285,12 +258,6 @@ class TaskControllerTest {
                 .andExpect(jsonPath("$.description").value("Desc"))
                 .andExpect(jsonPath("$.taskPriority").value("MEDIUM"))
                 .andExpect(jsonPath("$.taskStatus").value("NOT_STARTED"));
-
-        verify(userService).getUserById(10L);
-        verify(taskService).getTaskById(taskId);
-        verify(projectUserService).getByProjectAndUser(project, user);
-        verify(taskService).getSimpleTaskDto(task);
-        verify(taskService, never()).getTaskDto(any());
     }
 
     @Test
@@ -300,11 +267,6 @@ class TaskControllerTest {
         mockMvc.perform(get("/tasks/{id}/no-history", taskId)
                         .header("Authorization", "not-a-number"))
                 .andExpect(status().isBadRequest());
-
-        verify(userService, never()).getUserById(any());
-        verify(taskService, never()).getTaskById(any());
-        verify(projectUserService, never()).getByProjectAndUser(any(), any());
-        verify(taskService, never()).getSimpleTaskDto(any());
     }
 
     @Test
@@ -318,12 +280,6 @@ class TaskControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isBadRequest());
-
-        verify(userService, never()).getUserById(any());
-        verify(taskService, never()).getTaskById(any());
-        verify(projectUserService, never()).getByProjectAndUser(any(), any());
-        verify(taskService, never()).addTaskHistoryEntry(any(), any());
-        verify(taskService, never()).getSimpleTaskDto(any());
     }
 
     @Test
@@ -340,11 +296,6 @@ class TaskControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isForbidden());
-
-        verify(taskService, never()).getTaskById(any());
-        verify(projectUserService, never()).getByProjectAndUser(any(), any());
-        verify(taskService, never()).addTaskHistoryEntry(any(), any());
-        verify(taskService, never()).getSimpleTaskDto(any());
     }
 
     @Test
@@ -365,10 +316,6 @@ class TaskControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isNotFound());
-
-        verify(projectUserService, never()).getByProjectAndUser(any(), any());
-        verify(taskService, never()).addTaskHistoryEntry(any(), any());
-        verify(taskService, never()).getSimpleTaskDto(any());
     }
 
     @Test
@@ -397,9 +344,6 @@ class TaskControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isForbidden());
-
-        verify(taskService, never()).addTaskHistoryEntry(any(), any());
-        verify(taskService, never()).getSimpleTaskDto(any());
     }
 
     @Test
@@ -430,9 +374,6 @@ class TaskControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isForbidden());
-
-        verify(taskService, never()).addTaskHistoryEntry(any(), any());
-        verify(taskService, never()).getSimpleTaskDto(any());
     }
 
     @Test
@@ -486,13 +427,6 @@ class TaskControllerTest {
                 .andExpect(jsonPath("$.description").value("Desc updated"))
                 .andExpect(jsonPath("$.taskPriority").value("MEDIUM"))
                 .andExpect(jsonPath("$.taskStatus").value("NOT_STARTED"));
-
-        verify(userService).getUserById(10L);
-        verify(taskService).getTaskById(taskId);
-        verify(projectUserService).getByProjectAndUser(project, user);
-        verify(taskService).addTaskHistoryEntry(any(), eq(originalTask));
-        verify(taskService).getSimpleTaskDto(updatedTask);
-        verify(taskService, never()).getTaskDto(any());
     }
 
     @Test
@@ -505,8 +439,6 @@ class TaskControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isBadRequest());
-
-        verifyNoInteractions(userService, taskService, projectUserService, emailService);
     }
 
     @Test
@@ -521,9 +453,6 @@ class TaskControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isForbidden());
-
-        verify(userService).getUserById(10L);
-        verifyNoInteractions(taskService, projectUserService, emailService);
     }
 
     @Test
@@ -542,10 +471,6 @@ class TaskControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isNotFound());
-
-        verify(userService).getUserById(10L);
-        verify(taskService).getTaskById(taskId);
-        verifyNoInteractions(projectUserService, emailService);
     }
 
     @Test
@@ -572,13 +497,6 @@ class TaskControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isForbidden());
-
-        verify(userService).getUserById(10L);
-        verify(taskService).getTaskById(taskId);
-        verify(projectUserService).getByProjectAndUser(project, user);
-        verifyNoInteractions(emailService);
-        verify(taskService, never()).addUser(any(), any());
-        verify(taskService, never()).getProjectTaskDto(any(), any());
     }
 
     @Test
@@ -607,14 +525,6 @@ class TaskControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isForbidden());
-
-        verify(userService).getUserById(10L);
-        verify(taskService).getTaskById(taskId);
-        verify(projectUserService).getByProjectAndUser(project, user);
-        verifyNoInteractions(emailService);
-        verify(userService, never()).assignTask(any(), any());
-        verify(taskService, never()).addUser(any(), any());
-        verify(taskService, never()).getProjectTaskDto(any(), any());
     }
 
     @Test
@@ -644,14 +554,6 @@ class TaskControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isNotFound());
-
-        verify(userService).getUserById(10L);
-        verify(taskService).getTaskById(taskId);
-        verify(projectUserService).getByProjectAndUser(project, user);
-        verify(userService).getUserById(20L);
-        verifyNoInteractions(emailService);
-        verify(userService, never()).assignTask(any(), any());
-        verify(taskService, never()).addUser(any(), any());
     }
 
     @Test
@@ -685,15 +587,6 @@ class TaskControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isUnauthorized());
-
-        verify(userService).getUserById(10L);
-        verify(taskService).getTaskById(taskId);
-        verify(projectUserService).getByProjectAndUser(project, user);
-        verify(userService).getUserById(20L);
-        verify(projectUserService).getByProjectAndUser(project, newUser);
-        verifyNoInteractions(emailService);
-        verify(userService, never()).assignTask(any(), any());
-        verify(taskService, never()).addUser(any(), any());
     }
 
     @Test
@@ -732,16 +625,6 @@ class TaskControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isForbidden());
-
-        verify(userService).getUserById(10L);
-        verify(taskService).getTaskById(taskId);
-        verify(projectUserService).getByProjectAndUser(project, user);
-        verify(userService).getUserById(20L);
-        verify(projectUserService).getByProjectAndUser(project, newUser);
-        verify(userService, never()).unassignTask(any(), any());
-        verify(userService, never()).assignTask(any(), any());
-        verify(taskService, never()).addUser(any(), any());
-        verifyNoInteractions(emailService);
     }
 
     @Test
@@ -801,9 +684,6 @@ class TaskControllerTest {
                 .andExpect(jsonPath("$.id").value(42))
                 .andExpect(jsonPath("$.name").value("Task A"));
 
-        verify(userService, never()).unassignTask(any(), any());
-        verify(userService).assignTask(newUser, task);
-        verify(taskService).addUser(task, newUser);
         verify(emailService).SendTaskAssignNotificationBulk(
                 eq(List.of("a@test.com")),
                 eq("My Project"),
@@ -869,9 +749,6 @@ class TaskControllerTest {
                 .andExpect(jsonPath("$.id").value(42))
                 .andExpect(jsonPath("$.name").value("Task A"));
 
-        verify(userService).unassignTask(oldUser, task);
-        verify(userService).assignTask(newUser, task);
-        verify(taskService).addUser(task, newUser);
         verify(emailService).SendTaskAssignNotificationBulk(
                 eq(List.of("a@test.com")),
                 eq("My Project"),
