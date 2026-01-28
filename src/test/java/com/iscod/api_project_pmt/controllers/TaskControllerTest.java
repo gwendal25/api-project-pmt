@@ -1026,4 +1026,134 @@ class TaskControllerTest {
                 .andExpect(jsonPath("$.id").value(42))
                 .andExpect(jsonPath("$.name").value("Task A"));
     }
+
+    @Test
+    void setAssignNotifications_returns400_whenAuthorizationHeaderIsNotANumber() throws Exception {
+        Long taskId = 42L;
+        String body = "{\"isNotified\": true}";
+
+        mockMvc.perform(put("/tasks/{id}/set-assign-notifications", taskId)
+                        .header("Authorization", "not-a-number")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void setAssignNotifications_returns403_whenUserIsNull() throws Exception {
+        Long taskId = 42L;
+        String body = "{\"isNotified\": true}";
+
+        when(userService.getUserById(10L)).thenReturn(null);
+
+        mockMvc.perform(put("/tasks/{id}/set-assign-notifications", taskId)
+                        .header("Authorization", "10")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void setAssignNotifications_returns404_whenTaskNotFound() throws Exception {
+        Long taskId = 42L;
+        String body = "{\"isNotified\": true}";
+
+        User user = new User();
+        user.setId(10L);
+
+        when(userService.getUserById(10L)).thenReturn(user);
+        when(taskService.getTaskById(taskId)).thenReturn(null);
+
+        mockMvc.perform(put("/tasks/{id}/set-assign-notifications", taskId)
+                        .header("Authorization", "10")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void setAssignNotifications_returns403_whenUserNotInProject() throws Exception {
+        Long taskId = 42L;
+        String body = "{\"isNotified\": true}";
+
+        User user = new User();
+        user.setId(10L);
+
+        Project project = new Project();
+        project.setId(99L);
+
+        Task task = new Task();
+        task.setId(taskId);
+        task.setProject(project);
+
+        when(userService.getUserById(10L)).thenReturn(user);
+        when(taskService.getTaskById(taskId)).thenReturn(task);
+        when(projectUserService.getByProjectAndUser(project, user)).thenReturn(null);
+
+        mockMvc.perform(put("/tasks/{id}/set-assign-notifications", taskId)
+                        .header("Authorization", "10")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void setAssignNotifications_returns200_andEnablesNotifications_whenIsNotifiedTrue() throws Exception {
+        Long taskId = 42L;
+        String body = "{\"isNotified\": true}";
+
+        User user = new User();
+        user.setId(10L);
+
+        Project project = new Project();
+        project.setId(99L);
+
+        Task task = new Task();
+        task.setId(taskId);
+        task.setProject(project);
+
+        ProjectUser projectUser = new ProjectUser(project, user, UserRole.MEMBER);
+
+        when(userService.getUserById(10L)).thenReturn(user);
+        when(taskService.getTaskById(taskId)).thenReturn(task);
+        when(projectUserService.getByProjectAndUser(project, user)).thenReturn(projectUser);
+
+        mockMvc.perform(put("/tasks/{id}/set-assign-notifications", taskId)
+                        .header("Authorization", "10")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.hasNotifications").value(true));
+    }
+
+    @Test
+    void setAssignNotifications_returns200_andDisablesNotifications_whenIsNotifiedFalse() throws Exception {
+        Long taskId = 42L;
+        String body = "{\"isNotified\": false}";
+
+        User user = new User();
+        user.setId(10L);
+
+        Project project = new Project();
+        project.setId(99L);
+
+        Task task = new Task();
+        task.setId(taskId);
+        task.setProject(project);
+
+        ProjectUser projectUser = new ProjectUser(project, user, UserRole.MEMBER);
+
+        when(userService.getUserById(10L)).thenReturn(user);
+        when(taskService.getTaskById(taskId)).thenReturn(task);
+        when(projectUserService.getByProjectAndUser(project, user)).thenReturn(projectUser);
+
+        mockMvc.perform(put("/tasks/{id}/set-assign-notifications", taskId)
+                        .header("Authorization", "10")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.hasNotifications").value(false));
+    }
 }
