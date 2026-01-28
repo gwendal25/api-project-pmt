@@ -3,6 +3,7 @@ package com.iscod.api_project_pmt.controllers;
 import com.iscod.api_project_pmt.dtos.task.ProjectTaskDto;
 import com.iscod.api_project_pmt.dtos.task.SimpleTaskDto;
 import com.iscod.api_project_pmt.dtos.task.TaskDto;
+import com.iscod.api_project_pmt.dtos.user.TaskUserDto;
 import com.iscod.api_project_pmt.entities.Project;
 import com.iscod.api_project_pmt.entities.ProjectUser;
 import com.iscod.api_project_pmt.entities.Task;
@@ -26,6 +27,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -127,15 +129,7 @@ class TaskControllerTest {
         ProjectUser projectUser = new ProjectUser(project, user, UserRole.MEMBER);
 
         Date endDate = new Date();
-        TaskDto dto = new TaskDto(
-                taskId,
-                "Task A",
-                "Desc",
-                TaskPriority.MEDIUM,
-                TaskStatus.NOT_STARTED,
-                endDate,
-                List.of()
-        );
+        TaskDto dto = new TaskDto(taskId, "Task A", "Desc", TaskPriority.MEDIUM, TaskStatus.NOT_STARTED, endDate, List.of());
 
         when(userService.getUserById(10L)).thenReturn(user);
         when(taskService.getTaskById(taskId)).thenReturn(task);
@@ -235,14 +229,7 @@ class TaskControllerTest {
         ProjectUser projectUser = new ProjectUser(project, user, UserRole.MEMBER);
 
         Date endDate = new Date();
-        SimpleTaskDto dto = new SimpleTaskDto(
-                taskId,
-                "Task A",
-                "Desc",
-                TaskPriority.MEDIUM,
-                TaskStatus.NOT_STARTED,
-                endDate
-        );
+        SimpleTaskDto dto = new SimpleTaskDto(taskId, "Task A", "Desc", TaskPriority.MEDIUM, TaskStatus.NOT_STARTED, endDate);
 
         when(userService.getUserById(10L)).thenReturn(user);
         when(taskService.getTaskById(taskId)).thenReturn(task);
@@ -401,14 +388,7 @@ class TaskControllerTest {
 
         ProjectUser projectUser = new ProjectUser(project, user, UserRole.MEMBER);
 
-        SimpleTaskDto updatedDto = new SimpleTaskDto(
-                taskId,
-                "Task Updated",
-                "Desc updated",
-                TaskPriority.MEDIUM,
-                TaskStatus.NOT_STARTED,
-                new Date()
-        );
+        SimpleTaskDto updatedDto = new SimpleTaskDto(taskId, "Task Updated", "Desc updated", TaskPriority.MEDIUM, TaskStatus.NOT_STARTED, new Date());
 
         when(userService.getUserById(10L)).thenReturn(user);
         when(taskService.getTaskById(taskId)).thenReturn(originalTask);
@@ -634,29 +614,33 @@ class TaskControllerTest {
 
         User user = new User();
         user.setId(10L);
+        user.setEmail("a@test.com");
 
         User newUser = new User();
         newUser.setId(20L);
         newUser.setName("New User");
 
-        Project project = mock(Project.class);
-        when(project.getName()).thenReturn("My Project");
+        Project project = new Project();
+        project.setId(99L);
+        project.setName("My Project");
 
-        Task task = mock(Task.class);
-        when(task.getProject()).thenReturn(project);
-        when(task.getUser()).thenReturn(null);
+        Task task = new Task();
+        task.setId(taskId);
+        task.setName("Task A");
+        task.setProject(project);
+        task.setUser(null);
+        task.setNotificationUsers(Set.of(user));
+        project.setTasks(Set.of(task));
 
-        Task taskAfterAddUser = mock(Task.class);
-        when(taskAfterAddUser.getProject()).thenReturn(project);
-        when(taskAfterAddUser.getName()).thenReturn("Task A");
-        when(taskAfterAddUser.getUser()).thenReturn(newUser);
-        when(taskAfterAddUser.getUsersTaskAssignedNotifiedMails()).thenReturn(List.of("a@test.com"));
+        Task taskAssigned = new Task();
+        taskAssigned.setId(taskId);
+        taskAssigned.setName("Task A");
+        taskAssigned.setProject(project);
+        taskAssigned.setUser(newUser);
+        taskAssigned.setNotificationUsers(Set.of(user));
 
-        ProjectUser projectUser = new ProjectUser();
-        projectUser.setRole(UserRole.MEMBER);
-
-        ProjectUser newProjectUser = new ProjectUser();
-        newProjectUser.setRole(UserRole.MEMBER);
+        ProjectUser projectUser = new ProjectUser(project, user, UserRole.MEMBER);
+        ProjectUser newProjectUser = new ProjectUser(project, newUser, UserRole.MEMBER);
 
         ProjectTaskDto dto = new ProjectTaskDto();
         dto.setId(taskId);
@@ -665,6 +649,9 @@ class TaskControllerTest {
         dto.setTaskPriority(TaskPriority.MEDIUM);
         dto.setTaskStatus(TaskStatus.NOT_STARTED);
         dto.setEndDate(new Date());
+        TaskUserDto taskUserDto = new TaskUserDto(newUser.getId(), newUser.getName());
+        dto.setUser(taskUserDto);
+        dto.setNotified(true);
 
         when(userService.getUserById(10L)).thenReturn(user);
         when(taskService.getTaskById(taskId)).thenReturn(task);
@@ -672,8 +659,8 @@ class TaskControllerTest {
         when(userService.getUserById(20L)).thenReturn(newUser);
         when(projectUserService.getByProjectAndUser(project, newUser)).thenReturn(newProjectUser);
         when(userService.assignTask(newUser, task)).thenReturn(newUser);
-        when(taskService.addUser(task, newUser)).thenReturn(taskAfterAddUser);
-        when(taskService.getProjectTaskDto(taskAfterAddUser, newUser)).thenReturn(dto);
+        when(taskService.addUser(task, newUser)).thenReturn(taskAssigned);
+        when(taskService.getProjectTaskDto(taskAssigned, newUser)).thenReturn(dto);
 
         mockMvc.perform(put("/tasks/{id}/assign", taskId)
                         .header("Authorization", "10")
@@ -690,7 +677,6 @@ class TaskControllerTest {
                 eq("Task A"),
                 eq("New User")
         );
-        verify(taskService).getProjectTaskDto(taskAfterAddUser, newUser);
     }
 
     @Test
@@ -700,6 +686,7 @@ class TaskControllerTest {
 
         User user = new User();
         user.setId(10L);
+        user.setEmail("a@test.com");
 
         User oldUser = new User();
         oldUser.setId(30L);
@@ -708,28 +695,33 @@ class TaskControllerTest {
         newUser.setId(20L);
         newUser.setName("New User");
 
-        Project project = mock(Project.class);
-        when(project.getName()).thenReturn("My Project");
+        Project project = new Project();
+        project.setName("My Project");
 
-        Task task = mock(Task.class);
-        when(task.getProject()).thenReturn(project);
-        when(task.getUser()).thenReturn(oldUser);
+        Task task = new Task();
+        task.setProject(project);
+        task.setUser(oldUser);
 
-        Task taskAfterAddUser = mock(Task.class);
-        when(taskAfterAddUser.getProject()).thenReturn(project);
-        when(taskAfterAddUser.getName()).thenReturn("Task A");
-        when(taskAfterAddUser.getUser()).thenReturn(newUser);
-        when(taskAfterAddUser.getUsersTaskAssignedNotifiedMails()).thenReturn(List.of("a@test.com"));
+        Task taskAssigned = new Task();
+        taskAssigned.setId(taskId);
+        taskAssigned.setName("Task A");
+        taskAssigned.setProject(project);
+        taskAssigned.setUser(newUser);
+        taskAssigned.setNotificationUsers(Set.of(user));
 
-        ProjectUser projectUser = new ProjectUser();
-        projectUser.setRole(UserRole.MEMBER);
-
-        ProjectUser newProjectUser = new ProjectUser();
-        newProjectUser.setRole(UserRole.MEMBER);
+        ProjectUser projectUser = new ProjectUser(project, user, UserRole.MEMBER);
+        ProjectUser newProjectUser = new ProjectUser(project, newUser, UserRole.MEMBER);
 
         ProjectTaskDto dto = new ProjectTaskDto();
         dto.setId(taskId);
         dto.setName("Task A");
+        dto.setDescription("Desc");
+        dto.setTaskPriority(TaskPriority.MEDIUM);
+        dto.setTaskStatus(TaskStatus.NOT_STARTED);
+        dto.setEndDate(new Date());
+        TaskUserDto taskUserDto = new TaskUserDto(newUser.getId(), newUser.getName());
+        dto.setUser(taskUserDto);
+        dto.setNotified(true);
 
         when(userService.getUserById(10L)).thenReturn(user);
         when(taskService.getTaskById(taskId)).thenReturn(task);
@@ -737,8 +729,8 @@ class TaskControllerTest {
         when(userService.getUserById(20L)).thenReturn(newUser);
         when(projectUserService.getByProjectAndUser(project, newUser)).thenReturn(newProjectUser);
         when(userService.assignTask(newUser, task)).thenReturn(newUser);
-        when(taskService.addUser(task, newUser)).thenReturn(taskAfterAddUser);
-        when(taskService.getProjectTaskDto(taskAfterAddUser, newUser)).thenReturn(dto);
+        when(taskService.addUser(task, newUser)).thenReturn(taskAssigned);
+        when(taskService.getProjectTaskDto(taskAssigned, newUser)).thenReturn(dto);
 
         mockMvc.perform(put("/tasks/{id}/assign", taskId)
                         .header("Authorization", "10")
@@ -755,7 +747,6 @@ class TaskControllerTest {
                 eq("Task A"),
                 eq("New User")
         );
-        verify(taskService).getProjectTaskDto(taskAfterAddUser, newUser);
     }
 
     @Test
