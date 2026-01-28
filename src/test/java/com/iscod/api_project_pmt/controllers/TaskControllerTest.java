@@ -29,6 +29,7 @@ import java.util.List;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -303,5 +304,193 @@ class TaskControllerTest {
         verify(taskService, never()).getTaskById(any());
         verify(projectUserService, never()).getByProjectAndUser(any(), any());
         verify(taskService, never()).getSimpleTaskDto(any());
+    }
+
+    @Test
+    void updateTask_returns400_whenAuthorizationHeaderIsNotANumber() throws Exception {
+        Long taskId = 42L;
+
+        String body = "{\"name\": \"Task Updated\",\"description\": \"Desc updated\", \"taskPriority\": \"MEDIUM\", \"taskStatus\": \"NOT_STARTED\", \"endDate\": \"2030-01-01 07:00:00\"} ";
+
+        mockMvc.perform(put("/tasks/{id}", taskId)
+                        .header("Authorization", "not-a-number")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isBadRequest());
+
+        verify(userService, never()).getUserById(any());
+        verify(taskService, never()).getTaskById(any());
+        verify(projectUserService, never()).getByProjectAndUser(any(), any());
+        verify(taskService, never()).addTaskHistoryEntry(any(), any());
+        verify(taskService, never()).getSimpleTaskDto(any());
+    }
+
+    @Test
+    void updateTask_returns403_whenUserIsNull() throws Exception {
+        Long taskId = 42L;
+        String authorizationHeader = "10";
+
+        String body = "{\"name\": \"Task Updated\",\"description\": \"Desc updated\", \"taskPriority\": \"MEDIUM\", \"taskStatus\": \"NOT_STARTED\", \"endDate\": \"2030-01-01 07:00:00\"} ";
+
+        when(userService.getUserById(10L)).thenReturn(null);
+
+        mockMvc.perform(put("/tasks/{id}", taskId)
+                        .header("Authorization", authorizationHeader)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isForbidden());
+
+        verify(taskService, never()).getTaskById(any());
+        verify(projectUserService, never()).getByProjectAndUser(any(), any());
+        verify(taskService, never()).addTaskHistoryEntry(any(), any());
+        verify(taskService, never()).getSimpleTaskDto(any());
+    }
+
+    @Test
+    void updateTask_returns404_whenTaskNotFound() throws Exception {
+        Long taskId = 42L;
+        String authorizationHeader = "10";
+
+        String body = "{\"name\": \"Task Updated\",\"description\": \"Desc updated\", \"taskPriority\": \"MEDIUM\", \"taskStatus\": \"NOT_STARTED\", \"endDate\": \"2030-01-01 07:00:00\"} ";
+
+        User user = new User();
+        user.setId(10L);
+
+        when(userService.getUserById(10L)).thenReturn(user);
+        when(taskService.getTaskById(taskId)).thenReturn(null);
+
+        mockMvc.perform(put("/tasks/{id}", taskId)
+                        .header("Authorization", authorizationHeader)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isNotFound());
+
+        verify(projectUserService, never()).getByProjectAndUser(any(), any());
+        verify(taskService, never()).addTaskHistoryEntry(any(), any());
+        verify(taskService, never()).getSimpleTaskDto(any());
+    }
+
+    @Test
+    void updateTask_returns403_whenUserNotInProject() throws Exception {
+        Long taskId = 42L;
+        String authorizationHeader = "10";
+
+        String body = "{\"name\": \"Task Updated\",\"description\": \"Desc updated\", \"taskPriority\": \"MEDIUM\", \"taskStatus\": \"NOT_STARTED\", \"endDate\": \"2030-01-01 07:00:00\"} ";
+
+        User user = new User();
+        user.setId(10L);
+
+        Project project = new Project();
+        project.setId(99L);
+
+        Task task = new Task();
+        task.setId(taskId);
+        task.setProject(project);
+
+        when(userService.getUserById(10L)).thenReturn(user);
+        when(taskService.getTaskById(taskId)).thenReturn(task);
+        when(projectUserService.getByProjectAndUser(project, user)).thenReturn(null);
+
+        mockMvc.perform(put("/tasks/{id}", taskId)
+                        .header("Authorization", authorizationHeader)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isForbidden());
+
+        verify(taskService, never()).addTaskHistoryEntry(any(), any());
+        verify(taskService, never()).getSimpleTaskDto(any());
+    }
+
+    @Test
+    void updateTask_returns403_whenRoleIsObserver() throws Exception {
+        Long taskId = 42L;
+        String authorizationHeader = "10";
+
+        String body = "{\"name\": \"Task Updated\",\"description\": \"Desc updated\", \"taskPriority\": \"MEDIUM\", \"taskStatus\": \"NOT_STARTED\", \"endDate\": \"2030-01-01 07:00:00\"} ";
+
+        User user = new User();
+        user.setId(10L);
+
+        Project project = new Project();
+        project.setId(99L);
+
+        Task task = new Task();
+        task.setId(taskId);
+        task.setProject(project);
+
+        ProjectUser projectUser = new ProjectUser(project, user, UserRole.OBSERVER);
+
+        when(userService.getUserById(10L)).thenReturn(user);
+        when(taskService.getTaskById(taskId)).thenReturn(task);
+        when(projectUserService.getByProjectAndUser(project, user)).thenReturn(projectUser);
+
+        mockMvc.perform(put("/tasks/{id}", taskId)
+                        .header("Authorization", authorizationHeader)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isForbidden());
+
+        verify(taskService, never()).addTaskHistoryEntry(any(), any());
+        verify(taskService, never()).getSimpleTaskDto(any());
+    }
+
+    @Test
+    void updateTask_returns200_andUpdatedSimpleTaskDto_whenAccessGranted() throws Exception {
+        Long taskId = 42L;
+        String authorizationHeader = "10";
+
+        String body = "{\"name\": \"Task Updated\",\"description\": \"Desc updated\", \"taskPriority\": \"MEDIUM\", \"taskStatus\": \"NOT_STARTED\", \"endDate\": \"2030-01-01 07:00:00\"} ";
+
+        User user = new User();
+        user.setId(10L);
+
+        Project project = new Project();
+        project.setId(99L);
+
+        Task originalTask = new Task();
+        originalTask.setId(taskId);
+        originalTask.setProject(project);
+
+        Task updatedTask = new Task();
+        updatedTask.setId(taskId);
+        updatedTask.setName("Task Updated");
+        updatedTask.setDescription("Desc updated");
+        updatedTask.setProject(project);
+
+        ProjectUser projectUser = new ProjectUser(project, user, UserRole.MEMBER);
+
+        SimpleTaskDto updatedDto = new SimpleTaskDto(
+                taskId,
+                "Task Updated",
+                "Desc updated",
+                TaskPriority.MEDIUM,
+                TaskStatus.NOT_STARTED,
+                new Date()
+        );
+
+        when(userService.getUserById(10L)).thenReturn(user);
+        when(taskService.getTaskById(taskId)).thenReturn(originalTask);
+        when(projectUserService.getByProjectAndUser(project, user)).thenReturn(projectUser);
+        when(taskService.addTaskHistoryEntry(any(), eq(originalTask))).thenReturn(updatedTask);
+        when(taskService.getSimpleTaskDto(updatedTask)).thenReturn(updatedDto);
+
+        mockMvc.perform(put("/tasks/{id}", taskId)
+                        .header("Authorization", authorizationHeader)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(42))
+                .andExpect(jsonPath("$.name").value("Task Updated"))
+                .andExpect(jsonPath("$.description").value("Desc updated"))
+                .andExpect(jsonPath("$.taskPriority").value("MEDIUM"))
+                .andExpect(jsonPath("$.taskStatus").value("NOT_STARTED"));
+
+        verify(userService).getUserById(10L);
+        verify(taskService).getTaskById(taskId);
+        verify(projectUserService).getByProjectAndUser(project, user);
+        verify(taskService).addTaskHistoryEntry(any(), eq(originalTask));
+        verify(taskService).getSimpleTaskDto(updatedTask);
+        verify(taskService, never()).getTaskDto(any());
     }
 }
