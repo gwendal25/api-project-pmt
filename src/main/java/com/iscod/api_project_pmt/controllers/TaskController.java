@@ -65,8 +65,14 @@ public class TaskController {
      * @return les données de la tâche avec id, nom, description, priorité, status et date de fin
      */
     @GetMapping("/{id}/no-history")
-    public ResponseEntity<SimpleTaskDto> getTaskWithoutHistory(@PathVariable Long id, @RequestHeader("Authorization") String userIdStr) {
-        User user = userService.getUserById(Long.valueOf(userIdStr));
+    public ResponseEntity<SimpleTaskDto> getTaskWithoutHistory(@PathVariable Long id, @Valid @RequestHeader("Authorization") String userIdStr) {
+        Long userId;
+        try {
+            userId = Long.valueOf(userIdStr);
+        } catch (NumberFormatException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Incorrect request : The token you provided is not a valid number");
+        }
+        User user = userService.getUserById(userId);
         if(user == null) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied : You need to be logged in to access this project");
         }
