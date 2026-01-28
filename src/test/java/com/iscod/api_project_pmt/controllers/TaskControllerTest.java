@@ -1,5 +1,6 @@
 package com.iscod.api_project_pmt.controllers;
 
+import com.iscod.api_project_pmt.dtos.task.ProjectTaskDto;
 import com.iscod.api_project_pmt.dtos.task.SimpleTaskDto;
 import com.iscod.api_project_pmt.dtos.task.TaskDto;
 import com.iscod.api_project_pmt.entities.Project;
@@ -492,5 +493,391 @@ class TaskControllerTest {
         verify(taskService).addTaskHistoryEntry(any(), eq(originalTask));
         verify(taskService).getSimpleTaskDto(updatedTask);
         verify(taskService, never()).getTaskDto(any());
+    }
+
+    @Test
+    void assignTask_returns500_whenAuthorizationHeaderIsNotANumber() throws Exception {
+        Long taskId = 42L;
+        String body = "{\"userId\": 20}";
+
+        mockMvc.perform(put("/tasks/{id}/assign", taskId)
+                        .header("Authorization", "not-a-number")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isBadRequest());
+
+        verifyNoInteractions(userService, taskService, projectUserService, emailService);
+    }
+
+    @Test
+    void assignTask_returns403_whenUserIsNull() throws Exception {
+        Long taskId = 42L;
+        String body = "{\"userId\": 20}";
+
+        when(userService.getUserById(10L)).thenReturn(null);
+
+        mockMvc.perform(put("/tasks/{id}/assign", taskId)
+                        .header("Authorization", "10")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isForbidden());
+
+        verify(userService).getUserById(10L);
+        verifyNoInteractions(taskService, projectUserService, emailService);
+    }
+
+    @Test
+    void assignTask_returns404_whenTaskNotFound() throws Exception {
+        Long taskId = 42L;
+        String body = "{\"userId\": 20}";
+
+        User user = new User();
+        user.setId(10L);
+
+        when(userService.getUserById(10L)).thenReturn(user);
+        when(taskService.getTaskById(taskId)).thenReturn(null);
+
+        mockMvc.perform(put("/tasks/{id}/assign", taskId)
+                        .header("Authorization", "10")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isNotFound());
+
+        verify(userService).getUserById(10L);
+        verify(taskService).getTaskById(taskId);
+        verifyNoInteractions(projectUserService, emailService);
+    }
+
+    @Test
+    void assignTask_returns403_whenUserNotInProject() throws Exception {
+        Long taskId = 42L;
+        String body = "{\"userId\": 20}";
+
+        User user = new User();
+        user.setId(10L);
+
+        Project project = new Project();
+        project.setId(99L);
+
+        Task task = new Task();
+        task.setId(taskId);
+        task.setProject(project);
+
+        when(userService.getUserById(10L)).thenReturn(user);
+        when(taskService.getTaskById(taskId)).thenReturn(task);
+        when(projectUserService.getByProjectAndUser(project, user)).thenReturn(null);
+
+        mockMvc.perform(put("/tasks/{id}/assign", taskId)
+                        .header("Authorization", "10")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isForbidden());
+
+        verify(userService).getUserById(10L);
+        verify(taskService).getTaskById(taskId);
+        verify(projectUserService).getByProjectAndUser(project, user);
+        verifyNoInteractions(emailService);
+        verify(taskService, never()).addUser(any(), any());
+        verify(taskService, never()).getProjectTaskDto(any(), any());
+    }
+
+    @Test
+    void assignTask_returns403_whenRoleIsObserver() throws Exception {
+        Long taskId = 42L;
+        String body = "{\"userId\": 20}";
+
+        User user = new User();
+        user.setId(10L);
+
+        Project project = new Project();
+        project.setId(99L);
+
+        Task task = new Task();
+        task.setId(taskId);
+        task.setProject(project);
+
+        ProjectUser projectUser = new ProjectUser(project, user, UserRole.OBSERVER);
+
+        when(userService.getUserById(10L)).thenReturn(user);
+        when(taskService.getTaskById(taskId)).thenReturn(task);
+        when(projectUserService.getByProjectAndUser(project, user)).thenReturn(projectUser);
+
+        mockMvc.perform(put("/tasks/{id}/assign", taskId)
+                        .header("Authorization", "10")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isForbidden());
+
+        verify(userService).getUserById(10L);
+        verify(taskService).getTaskById(taskId);
+        verify(projectUserService).getByProjectAndUser(project, user);
+        verifyNoInteractions(emailService);
+        verify(userService, never()).assignTask(any(), any());
+        verify(taskService, never()).addUser(any(), any());
+        verify(taskService, never()).getProjectTaskDto(any(), any());
+    }
+
+    @Test
+    void assignTask_returns404_whenNewUserNotFound() throws Exception {
+        Long taskId = 42L;
+        String body = "{\"userId\": 20}";
+
+        User user = new User();
+        user.setId(10L);
+
+        Project project = new Project();
+        project.setId(99L);
+
+        Task task = new Task();
+        task.setId(taskId);
+        task.setProject(project);
+
+        ProjectUser projectUser = new ProjectUser(project, user, UserRole.MEMBER);
+
+        when(userService.getUserById(10L)).thenReturn(user);
+        when(taskService.getTaskById(taskId)).thenReturn(task);
+        when(projectUserService.getByProjectAndUser(project, user)).thenReturn(projectUser);
+        when(userService.getUserById(20L)).thenReturn(null);
+
+        mockMvc.perform(put("/tasks/{id}/assign", taskId)
+                        .header("Authorization", "10")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isNotFound());
+
+        verify(userService).getUserById(10L);
+        verify(taskService).getTaskById(taskId);
+        verify(projectUserService).getByProjectAndUser(project, user);
+        verify(userService).getUserById(20L);
+        verifyNoInteractions(emailService);
+        verify(userService, never()).assignTask(any(), any());
+        verify(taskService, never()).addUser(any(), any());
+    }
+
+    @Test
+    void assignTask_returns401_whenNewUserNotInProject() throws Exception {
+        Long taskId = 42L;
+        String body = "{\"userId\": 20}";
+
+        User user = new User();
+        user.setId(10L);
+
+        User newUser = new User();
+        newUser.setId(20L);
+
+        Project project = new Project();
+        project.setId(99L);
+
+        Task task = new Task();
+        task.setId(taskId);
+        task.setProject(project);
+
+        ProjectUser projectUser = new ProjectUser(project, user, UserRole.MEMBER);
+
+        when(userService.getUserById(10L)).thenReturn(user);
+        when(taskService.getTaskById(taskId)).thenReturn(task);
+        when(projectUserService.getByProjectAndUser(project, user)).thenReturn(projectUser);
+        when(userService.getUserById(20L)).thenReturn(newUser);
+        when(projectUserService.getByProjectAndUser(project, newUser)).thenReturn(null);
+
+        mockMvc.perform(put("/tasks/{id}/assign", taskId)
+                        .header("Authorization", "10")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isUnauthorized());
+
+        verify(userService).getUserById(10L);
+        verify(taskService).getTaskById(taskId);
+        verify(projectUserService).getByProjectAndUser(project, user);
+        verify(userService).getUserById(20L);
+        verify(projectUserService).getByProjectAndUser(project, newUser);
+        verifyNoInteractions(emailService);
+        verify(userService, never()).assignTask(any(), any());
+        verify(taskService, never()).addUser(any(), any());
+    }
+
+    @Test
+    void assignTask_returns403_whenNewUserAlreadyAssignedToTask() throws Exception {
+        Long taskId = 42L;
+        String body = "{\"userId\": 20}";
+
+        User user = new User();
+        user.setId(10L);
+
+        User oldUser = new User();
+        oldUser.setId(20L);
+
+        User newUser = new User();
+        newUser.setId(20L);
+
+        Project project = new Project();
+        project.setId(99L);
+
+        Task task = new Task();
+        task.setId(taskId);
+        task.setProject(project);
+        task.setUser(oldUser);
+
+        ProjectUser projectUser = new ProjectUser(project, user, UserRole.MEMBER);
+        ProjectUser newProjectUser = new ProjectUser(project, newUser, UserRole.MEMBER);
+
+        when(userService.getUserById(10L)).thenReturn(user);
+        when(taskService.getTaskById(taskId)).thenReturn(task);
+        when(projectUserService.getByProjectAndUser(project, user)).thenReturn(projectUser);
+        when(userService.getUserById(20L)).thenReturn(newUser);
+        when(projectUserService.getByProjectAndUser(project, newUser)).thenReturn(newProjectUser);
+
+        mockMvc.perform(put("/tasks/{id}/assign", taskId)
+                        .header("Authorization", "10")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isForbidden());
+
+        verify(userService).getUserById(10L);
+        verify(taskService).getTaskById(taskId);
+        verify(projectUserService).getByProjectAndUser(project, user);
+        verify(userService).getUserById(20L);
+        verify(projectUserService).getByProjectAndUser(project, newUser);
+        verify(userService, never()).unassignTask(any(), any());
+        verify(userService, never()).assignTask(any(), any());
+        verify(taskService, never()).addUser(any(), any());
+        verifyNoInteractions(emailService);
+    }
+
+    @Test
+    void assignTask_returns200_andAssignsUser_whenOldUserIsNull() throws Exception {
+        Long taskId = 42L;
+        String body = "{\"userId\": 20}";
+
+        User user = new User();
+        user.setId(10L);
+
+        User newUser = new User();
+        newUser.setId(20L);
+        newUser.setName("New User");
+
+        Project project = mock(Project.class);
+        when(project.getName()).thenReturn("My Project");
+
+        Task task = mock(Task.class);
+        when(task.getProject()).thenReturn(project);
+        when(task.getUser()).thenReturn(null);
+
+        Task taskAfterAddUser = mock(Task.class);
+        when(taskAfterAddUser.getProject()).thenReturn(project);
+        when(taskAfterAddUser.getName()).thenReturn("Task A");
+        when(taskAfterAddUser.getUser()).thenReturn(newUser);
+        when(taskAfterAddUser.getUsersTaskAssignedNotifiedMails()).thenReturn(List.of("a@test.com"));
+
+        ProjectUser projectUser = new ProjectUser();
+        projectUser.setRole(UserRole.MEMBER);
+
+        ProjectUser newProjectUser = new ProjectUser();
+        newProjectUser.setRole(UserRole.MEMBER);
+
+        ProjectTaskDto dto = new ProjectTaskDto();
+        dto.setId(taskId);
+        dto.setName("Task A");
+        dto.setDescription("Desc");
+        dto.setTaskPriority(TaskPriority.MEDIUM);
+        dto.setTaskStatus(TaskStatus.NOT_STARTED);
+        dto.setEndDate(new Date());
+
+        when(userService.getUserById(10L)).thenReturn(user);
+        when(taskService.getTaskById(taskId)).thenReturn(task);
+        when(projectUserService.getByProjectAndUser(project, user)).thenReturn(projectUser);
+        when(userService.getUserById(20L)).thenReturn(newUser);
+        when(projectUserService.getByProjectAndUser(project, newUser)).thenReturn(newProjectUser);
+        when(userService.assignTask(newUser, task)).thenReturn(newUser);
+        when(taskService.addUser(task, newUser)).thenReturn(taskAfterAddUser);
+        when(taskService.getProjectTaskDto(taskAfterAddUser, newUser)).thenReturn(dto);
+
+        mockMvc.perform(put("/tasks/{id}/assign", taskId)
+                        .header("Authorization", "10")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(42))
+                .andExpect(jsonPath("$.name").value("Task A"));
+
+        verify(userService, never()).unassignTask(any(), any());
+        verify(userService).assignTask(newUser, task);
+        verify(taskService).addUser(task, newUser);
+        verify(emailService).SendTaskAssignNotificationBulk(
+                eq(List.of("a@test.com")),
+                eq("My Project"),
+                eq("Task A"),
+                eq("New User")
+        );
+        verify(taskService).getProjectTaskDto(taskAfterAddUser, newUser);
+    }
+
+    @Test
+    void assignTask_returns200_andUnassignsOldUser_thenAssignsNewUser_whenOldUserExists() throws Exception {
+        Long taskId = 42L;
+        String body = "{\"userId\": 20}";
+
+        User user = new User();
+        user.setId(10L);
+
+        User oldUser = new User();
+        oldUser.setId(30L);
+
+        User newUser = new User();
+        newUser.setId(20L);
+        newUser.setName("New User");
+
+        Project project = mock(Project.class);
+        when(project.getName()).thenReturn("My Project");
+
+        Task task = mock(Task.class);
+        when(task.getProject()).thenReturn(project);
+        when(task.getUser()).thenReturn(oldUser);
+
+        Task taskAfterAddUser = mock(Task.class);
+        when(taskAfterAddUser.getProject()).thenReturn(project);
+        when(taskAfterAddUser.getName()).thenReturn("Task A");
+        when(taskAfterAddUser.getUser()).thenReturn(newUser);
+        when(taskAfterAddUser.getUsersTaskAssignedNotifiedMails()).thenReturn(List.of("a@test.com"));
+
+        ProjectUser projectUser = new ProjectUser();
+        projectUser.setRole(UserRole.MEMBER);
+
+        ProjectUser newProjectUser = new ProjectUser();
+        newProjectUser.setRole(UserRole.MEMBER);
+
+        ProjectTaskDto dto = new ProjectTaskDto();
+        dto.setId(taskId);
+        dto.setName("Task A");
+
+        when(userService.getUserById(10L)).thenReturn(user);
+        when(taskService.getTaskById(taskId)).thenReturn(task);
+        when(projectUserService.getByProjectAndUser(project, user)).thenReturn(projectUser);
+        when(userService.getUserById(20L)).thenReturn(newUser);
+        when(projectUserService.getByProjectAndUser(project, newUser)).thenReturn(newProjectUser);
+        when(userService.assignTask(newUser, task)).thenReturn(newUser);
+        when(taskService.addUser(task, newUser)).thenReturn(taskAfterAddUser);
+        when(taskService.getProjectTaskDto(taskAfterAddUser, newUser)).thenReturn(dto);
+
+        mockMvc.perform(put("/tasks/{id}/assign", taskId)
+                        .header("Authorization", "10")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(42))
+                .andExpect(jsonPath("$.name").value("Task A"));
+
+        verify(userService).unassignTask(oldUser, task);
+        verify(userService).assignTask(newUser, task);
+        verify(taskService).addUser(task, newUser);
+        verify(emailService).SendTaskAssignNotificationBulk(
+                eq(List.of("a@test.com")),
+                eq("My Project"),
+                eq("Task A"),
+                eq("New User")
+        );
+        verify(taskService).getProjectTaskDto(taskAfterAddUser, newUser);
     }
 }
