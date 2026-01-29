@@ -33,9 +33,19 @@ public class ProjectController {
     private final TaskService taskService;
 
     /**
-     * Cette méthode renvoie la liste de tous les projets dans la base de données
-     * À utiliser pour debugger l'application
+     * Cette méthode renvoie la liste de tous les projets dans la base de données (debug only).
      * @return une liste de projets simplifiés avec id, nom, description et date de début de chaque projet
+     * <strong>Exemple de réponse :</strong>
+     * <pre><code>
+     *     [
+     *       {
+     *         "id": 1,
+     *         "name": "Projet de factory",
+     *         "description": "Projet de factory visant à automatiser le processus de mise en culture des paras dans la factory 76",
+     *         "startDate": "2021-03-01"
+     *       }
+     *     ]
+     * </code></pre>
      */
     @GetMapping
     public List<SimpleProjectDto> getAllProjects() {
