@@ -126,4 +126,69 @@ public class UserControllerTest {
                 .andExpect(header().string("Location", "http://localhost/users/123"))
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON));
     }
+
+    @Test
+    void login_returns404_whenUserNotFound() throws Exception {
+        String body = """
+            {
+              "email": "missing@test.com",
+              "password": "pwd"
+            }
+            """;
+
+        when(userService.getByEmail("missing@test.com")).thenReturn(null);
+
+        mockMvc.perform(post("/users/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void login_returns400_whenPasswordIsIncorrect() throws Exception {
+        String body = """
+            {
+              "email": "user@test.com",
+              "password": "wrong"
+            }
+            """;
+
+        User user = new User();
+        user.setEmail("user@test.com");
+        user.setPassword("correct");
+
+        when(userService.getByEmail("user@test.com")).thenReturn(user);
+
+        mockMvc.perform(post("/users/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void login_returns200_whenCredentialsAreCorrect() throws Exception {
+        String body = """
+            {
+              "email": "user@test.com",
+              "password": "correct"
+            }
+            """;
+
+        User user = new User();
+        user.setId(10L);
+        user.setEmail("user@test.com");
+        user.setPassword("correct");
+
+        UserDto dto = mock(UserDto.class);
+
+        when(userService.getByEmail("user@test.com")).thenReturn(user);
+        when(userService.getDto(user)).thenReturn(dto);
+
+        mockMvc.perform(post("/users/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON));
+    }
 }
