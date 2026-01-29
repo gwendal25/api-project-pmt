@@ -30,7 +30,7 @@ public class ProjectUserServiceImpl implements ProjectUserService {
 
     @Override
     public ProjectUserRoleDto getProjectUserRoleDto(Project project) {
-        return projectUserRoleMapper.toUserRoleDto(project);
+        return projectUserRoleMapper.toProjectUserRoleDto(project);
     }
 
     @Override
