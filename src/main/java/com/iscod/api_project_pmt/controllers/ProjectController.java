@@ -389,11 +389,35 @@ public class ProjectController {
     }
 
     /**
-     * Change le rôle de l'utilisateur associé à un projet
+     * Change le rôle d'un utilisateur associé à un projet
      * @param id Id du projet
-     * @param projectUserIdRequest Les infos de mise à jour de la relation entre l'utilisateur et le projet avec l'id et le nouveau rôle de l'utilisateur
-     * @param userIdStr Un faux token d'authorization qui est l'id de l'utilisateur
+     * @param projectUserIdRequest Les infos de mise à jour de la relation entre l'utilisateur et le projet (id, rôle utilisateur)
+     * @param userIdStr Un faux token d'accès (l'id de l'utilisateur)
      * @return Une version simplifiée de la relation entre l'utilisateur et le projet
+     * <strong>Exemple de requête :</strong>
+     * <pre><code>
+     *     {
+     *         "userId": 2,
+     *         "userRole": "MEMBER"
+     *     }
+     * </code></pre>
+     * <strong>Exemple de réponse :</strong>
+     * <pre><code>
+     *     {
+     *         "project": {
+     *             "id": 1,
+     *             "name": "Projet MagicBlade",
+     *             "description": "un jeu d'action-RPG en VR ou le joueur contrôle un T-76 pour combattre diverses créatures.",
+     *             "startDate": "2021-03-01"
+     *         },
+     *         "user": {
+     *             "id": 1,
+     *             "name": "Natasha",
+     *             "email": "natasha@honkaimail.com"
+     *         },
+     *         "role": "MEMBER"
+     *     }
+     * </code></pre>
      */
     @PutMapping("/{id}/change-user-role")
     public ResponseEntity<ProjectUserDto> ChangeUserRole(@PathVariable Long id, @RequestBody ProjectUserIdRequest projectUserIdRequest, @RequestHeader("Authorization") String userIdStr) {
