@@ -53,9 +53,20 @@ public class ProjectController {
     }
 
     /**
-     * Cette méthode renvoie la liste de tous les projets auquel l'utilisateur à accès
-     * @param userIdStr Un faux token d'authorisation qui est l'id de l'utilisateur qui crée le projet
-     * @return une liste de projets simplifiés avec id, nom, description et date de début de chaque projet
+     * Cette méthode renvoie la liste de tous les projets dont l'utilisateur fait partie
+     * @param userIdStr Un faux token d'accès (id de l'utilisateur)
+     * @return une liste de projets simplifiés avec id, nom, description, date de début et rôle de l'utilisateur de chaque projet
+     * <strong>Exemple de réponse :</strong>
+     * <pre><code>
+     *     [
+     *     {
+     *         "id": 1,
+     *         "name": "Project de parc d'attraction en VR",
+     *         "description": "Projet de parc d'attractions en Réalité Virtuelle ou l'utilisateur prend le controle d'un T-76 pour tirer sur diverses créatures",
+     *         "startDate": "2025-03-01",
+     *         "userRole": "ADMIN"
+     *     }
+     * </code></pre>
      */
     @GetMapping("/all")
     public ResponseEntity<List<ProjectWithUserRolesDto>> getAllProjectsByUser(@RequestHeader("Authorization") String userIdStr) {
