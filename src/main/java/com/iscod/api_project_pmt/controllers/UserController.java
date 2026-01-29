@@ -4,12 +4,13 @@ import com.iscod.api_project_pmt.dtos.user.UserDto;
 import com.iscod.api_project_pmt.dtos.user.UserLoginRequest;
 import com.iscod.api_project_pmt.dtos.user.UserRequest;
 import com.iscod.api_project_pmt.entities.User;
-import com.iscod.api_project_pmt.mappers.UserMapper;
-import com.iscod.api_project_pmt.repositories.UserRepository;
+import com.iscod.api_project_pmt.services.UserService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.List;
@@ -19,8 +20,7 @@ import java.util.List;
 @CrossOrigin(origins = "http://localhost:4200")
 @RequestMapping("/users")
 public class UserController {
-    private final UserRepository userRepository;
-    private final UserMapper userMapper;
+    private final UserService userService;
 
     /**
      * Cette méthode retourne la liste de tous les utilisateurs.
@@ -29,10 +29,7 @@ public class UserController {
      */
     @GetMapping
     public List<UserDto> getAllUsers() {
-        return userRepository.findAll()
-                .stream()
-                .map(userMapper::toDto)
-                .toList();
+        return userService.getAllUsers();
     }
 
     /**
@@ -42,12 +39,12 @@ public class UserController {
      */
     @GetMapping("/{id}")
     public ResponseEntity<UserDto> getUser(@PathVariable Long id) {
-        User user = userRepository.findById(id).orElse(null);
+        User user = userService.getUserById(id);
         if(user == null) {
-            return ResponseEntity.notFound().build();
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found : This user does not exist");
         }
 
-        return ResponseEntity.ok(userMapper.toDto(user));
+        return ResponseEntity.ok(userService.getDto(user));
     }
 
     /**
@@ -59,19 +56,19 @@ public class UserController {
     @PostMapping
     public ResponseEntity<UserDto> createUser(@Valid @RequestBody UserRequest userRequest, UriComponentsBuilder uriBuilder) {
         if(!userRequest.getPassword().equals(userRequest.getRepeatPassword())) {
-            return ResponseEntity.badRequest().build();
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Incorrect request : The password and repeat password do not match");
         }
 
-        User user = userRepository.findByEmail(userRequest.getEmail()).orElse(null);
+        User user = userService.getByEmail(userRequest.getEmail());
         if(user != null) {
-            return ResponseEntity.badRequest().build();
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User with email found : This email is already used by another user");
         }
 
-        User newUser = userMapper.toUser(userRequest);
-        userRepository.save(newUser);
-        UserDto userDto = userMapper.toDto(newUser);
-        var uri = uriBuilder.path("/users/{id}").buildAndExpand(userDto.getId()).toUri();
-        return ResponseEntity.created(uri).body(userDto);
+        User newUser = userService.create(userRequest);
+        return ResponseEntity.created(uriBuilder
+                .path("/users/{id}")
+                .buildAndExpand(newUser.getId()).toUri())
+                .body(userService.getDto(newUser));
     }
 
     /**
@@ -81,15 +78,15 @@ public class UserController {
      */
     @PostMapping("/login")
     public ResponseEntity<UserDto> login(@Valid @RequestBody UserLoginRequest userLoginRequest) {
-        User user = userRepository.findByEmail(userLoginRequest.getEmail()).orElse(null);
+        User user = userService.getByEmail(userLoginRequest.getEmail());
         if(user == null) {
-            return ResponseEntity.badRequest().build();
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found : This is not the user you are looking for");
         }
 
         if(!userLoginRequest.getPassword().equals(user.getPassword())) {
-            return ResponseEntity.badRequest().build();
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Incorrect email/password : The email/password combination is incorrect");
         }
 
-        return ResponseEntity.ok(userMapper.toDto(user));
+        return ResponseEntity.ok(userService.getDto(user));
     }
 }

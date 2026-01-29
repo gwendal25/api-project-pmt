@@ -1,15 +1,31 @@
 package com.iscod.api_project_pmt.services;
 
+import com.iscod.api_project_pmt.dtos.user.UserDto;
+import com.iscod.api_project_pmt.dtos.user.UserRequest;
 import com.iscod.api_project_pmt.entities.Task;
 import com.iscod.api_project_pmt.entities.User;
+import com.iscod.api_project_pmt.mappers.UserMapper;
 import com.iscod.api_project_pmt.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 @Component
 public class UserServiceImpl implements UserService {
     @Autowired
     UserRepository userRepository;
+
+    @Autowired
+    UserMapper userMapper;
+
+    @Override
+    public List<UserDto> getAllUsers() {
+        return userRepository.findAll()
+                .stream()
+                .map(userMapper::toDto)
+                .toList();
+    }
 
     @Override
     public User getUserById(Long id) {
@@ -19,6 +35,17 @@ public class UserServiceImpl implements UserService {
     @Override
     public User getByEmail(String email) {
         return userRepository.findByEmail(email).orElse(null);
+    }
+
+    @Override
+    public UserDto getDto(User user) {
+        return userMapper.toDto(user);
+    }
+
+    @Override
+    public User create(UserRequest userRequest) {
+        User newUser = userMapper.toUser(userRequest);
+        return userRepository.save(newUser);
     }
 
     @Override
