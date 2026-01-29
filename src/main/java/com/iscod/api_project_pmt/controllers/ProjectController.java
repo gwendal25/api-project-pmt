@@ -328,10 +328,34 @@ public class ProjectController {
 
     /**
      * Ajoute un utilisateur à un projet en lui donnant un rôle sur ce projet
-     * @param id Id du projet auquel associé un nouvel utilisateur
-     * @param projectUserRequest les informations de l'utilisateur à ajouter au projet avec son email et son rôle sur le projet
-     * @param userIdStr Un faux token d'authorization qui est l'id de l'utilisateur
+     * @param id Id du projet auquel ajouter un nouvel utilisateur
+     * @param projectUserRequest les informations de l'utilisateur à ajouter au projet (email, rôle sur le projet)
+     * @param userIdStr Un faux token d'accès (l'id de l'utilisateur)
      * @return Une version simplifiée de la relation entre l'utilisateur et le projet
+     * <strong>Exemple de requête :</strong>
+     * <pre><code>
+     *     {
+     *         "email": "Natasha",
+     *         "userRole": "OBSERVER"
+     *     }
+     * </code></pre>
+     * <strong>Exemple de réponse :</strong>
+     * <pre><code>
+     *     {
+     *         "project": {
+     *             "id": 1,
+     *             "name": "Projet MagicBlade",
+     *             "description": "un jeu d'action-RPG en VR ou le joueur contrôle un T-76 pour combattre diverses créatures.",
+     *             "startDate": "2021-03-01"
+     *         },
+     *         "user": {
+     *             "id": 1,
+     *             "name": "Natasha",
+     *             "email": "natasha@honkaimail.com"
+     *         },
+     *         "role": "OBSERVER"
+     *     }
+     * </code></pre>
      */
     @PutMapping("/{id}/add-user")
     public ResponseEntity<ProjectUserDto> AddUserToProject(@PathVariable Long id, @RequestBody ProjectUserRequest projectUserRequest, @RequestHeader("Authorization") String userIdStr){
