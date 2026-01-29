@@ -278,12 +278,28 @@ public class ProjectController {
     }
 
     /**
-     * Met à jour les informations du projet
-     * Les infos du projet sont nom, description et date de début
+     * Met à jour les informations du projet via son id.
      * @param id Id du projet à modifier
-     * @param projectRequest Les informations de mise à jour du projet
-     * @param userIdStr Un faux token d'authorization qui est l'id de l'utilisateur
-     * @return Les informations modifiées du projet avec id, nom, description et date de début
+     * @param projectRequest Les informations de mise à jour du projet (nom, description et date de début)
+     * @param userIdStr Un faux token d'accès (l'id de l'utilisateur)
+     * @return Les informations mise à jour du projet (id, nom, description et date de début)
+     * <strong>Exemple de requête :</strong>
+     * <pre><code>
+     *     {
+     *         "name": "Projet MagicBlade: Caster Edition",
+     *         "description": "un jeu d'action-RPG en VR ou le joueur contrôle un T-76 pour combattre diverses créatures. L'édition finale du jeu avec tout le contenu additionnel gratuit et payant",
+     *         "startDate": "2021-03-01"
+     *     }
+     * </code></pre>
+     * <strong>Exemple de réponse :</strong>
+     * <pre><code>
+     *     {
+     *         "id": 1,
+     *         "name": "Projet MagicBlade: Caster Edition",
+     *         "description": "un jeu d'action-RPG en VR ou le joueur contrôle un T-76 pour combattre diverses créatures. L'édition finale du jeu avec tout le contenu additionnel gratuit et payant",
+     *         "startDate": "2021-03-01"
+     *     }
+     * </code></pre>
      */
     @PutMapping("/{id}")
     public ResponseEntity<SimpleProjectDto> UpdateProject(@PathVariable Long id, @RequestBody ProjectRequest projectRequest, @RequestHeader("Authorization") String userIdStr) {
