@@ -220,12 +220,32 @@ public class ProjectController {
 
     /**
      * Créer une nouvelle tâche et l'associe à un projet
-     * Les infos de la tâche sont nom, description, priorité, status et date de fin
      * @param id Id du projet auquel ajouter une nouvelle tâche
-     * @param taskRequest Les informations pour créer la tâche
-     * @param userIdStr Un faux token d'authorization qui est l'id de l'utilisateur
-     * @param uriBuilder Le builder de l'url de la tâche
-     * @return Les infos de la tâche avec id, nom, description, priorité, status et date de fin
+     * @param taskRequest Les informations de la tâche à créer
+     * @param userIdStr Un faux token d'accès (l'id de l'utilisateur)
+     * @param uriBuilder Le uri Builder qui permet de construire l'url de la tâche nouvellement crée
+     * @return Une ResponseEntity qui contient les infos de la tâche (id, nom, description, priorité, status, date de fin).
+     * <strong>Exemple de requête :</strong>
+     * <pre><code>
+     *     {
+     *         "name": "Ajout du controller de base",
+     *         "description": "Ajouter un character controller basique pour marcher, courir et sauter en 3D",
+     *         "taskPriority": "HIGH",
+     *         "taskStatus": "IN_PROGRESS",
+     *         "endDate": "2021-03-09"
+     *     }
+     * </code></pre>
+     * <strong>Exemple de réponse :</strong>
+     * <pre><code>
+     *     {
+     *         "id": 1,
+     *         "name": "Ajout du controller de base",
+     *         "description": "Ajouter un character controller basique pour marcher, courir et sauter en 3D",
+     *         "taskPriority": "HIGH",
+     *         "taskStatus": "IN_PROGRESS",
+     *         "endDate": "2021-03-09"
+     *     }
+     * </code></pre>
      */
     @PostMapping("/{id}/tasks")
     public ResponseEntity<SimpleTaskDto> CreateTask(@PathVariable Long id, @RequestBody TaskRequest taskRequest, @RequestHeader("Authorization") String userIdStr, UriComponentsBuilder uriBuilder) {
