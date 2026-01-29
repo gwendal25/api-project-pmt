@@ -15,6 +15,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @AutoConfigureMockMvc(addFilters = false)
@@ -61,5 +62,68 @@ public class UserControllerTest {
                 .andExpect(status().isBadRequest());
     }
 
+    @Test
+    void createUser_returns400_whenPasswordsDoNotMatch() throws Exception {
+        String body = """
+            {
+              "name": "Alice",
+              "email": "alice@test.com",
+              "password": "pwd-1",
+              "repeatPassword": "pwd-2"
+            }
+            """;
 
+        mockMvc.perform(post("/users")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void createUser_returns400_whenEmailAlreadyUsed() throws Exception {
+        String body = """
+            {
+              "name": "Alice",
+              "email": "alice@test.com",
+              "password": "pwd",
+              "repeatPassword": "pwd"
+            }
+            """;
+
+        when(userService.getByEmail("alice@test.com")).thenReturn(new User());
+
+        mockMvc.perform(post("/users")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void createUser_returns201_withLocationHeader_whenCreated() throws Exception {
+        String body = """
+            {
+              "name": "Alice",
+              "email": "alice@test.com",
+              "password": "pwd",
+              "repeatPassword": "pwd"
+            }
+            """;
+
+        User created = new User();
+        created.setId(123L);
+
+        UserDto dto = mock(UserDto.class);
+
+        when(userService.getByEmail("alice@test.com")).thenReturn(null);
+        when(userService.create(any())).thenReturn(created);
+        when(userService.getDto(created)).thenReturn(dto);
+
+        mockMvc.perform(post("/users")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isCreated())
+                .andExpect(header().string("Location", "http://localhost/users/123"))
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON));
+    }
 }
