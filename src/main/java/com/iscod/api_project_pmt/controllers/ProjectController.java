@@ -80,10 +80,39 @@ public class ProjectController {
 
     /**
      * Cette méthode permet de récupérer les informations d'un projet via son id
-     * Le projet contient id, nom, description, date de début, liste des tâches et liste des utilisateurs.
      * @param id Id du projet
-     * @param userIdStr Un faux token d'authorization qui est l'id de l'utilisateur
-     * @return Les informations du projet
+     * @param userIdStr Un faux token d'accès (id de l'utilisateur)
+     * @return Les informations du projet avec id, nom, description, date de début, rôle de l'utilisateur, liste des tâches et liste des utilisateurs.
+     * <strong>Exemple de réponse :</strong>
+     * <pre><code>
+     *     {
+     *         "id": 1,
+     *         "name": "Project de parc d'attraction en VR",
+     *         "description": "Projet de parc d'attractions en Réalité Virtuelle ou l'utilisateur prend le controle d'un T-76 pour tirer sur diverses créatures",
+     *         "startDate": "2025-03-01",
+     *         "userRole": "ADMIN",
+     *         "tasks": [
+     *              {
+     *                  "id": 1,
+     *                  "name": "Délimitation de la zone de construction du parc",
+     *                  "description": "Effectuer des tours de reconnaissance des différentes zones pour trouver les plus adaptés à la construction du parc.",
+     *                  "taskPriority": "HIGH",
+     *                  "taskStatus": "IN_PROGRESS",
+     *                  "endDate": "2025-07-01",
+     *                  "user": {
+     *                      "id": 7,
+     *                      "name": "Gépard",
+     *                  }
+     *                  "isNotified": true
+     *              }
+     *         ],
+     *         "users": [
+     *              "id": 1,
+     *              "name": "Endministrator",
+     *              "email": "endmin@factorymail.com",
+     *         ]
+     *     }
+     * </code></pre>
      */
     @GetMapping("/{id}")
     public ResponseEntity<ProjectDto> getProject(@PathVariable Long id, @RequestHeader("Authorization") String userIdStr) {
