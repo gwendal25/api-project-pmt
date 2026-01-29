@@ -136,10 +136,26 @@ public class ProjectController {
 
     /**
      * Récupère les informations minimales d'un projet ainsi que les utilisateurs associés et leurs rôles
-     * Le projet contient id, nom, description, date de début et liste des utilisateurs
      * @param id Id du projet
-     * @param userIdStr Un faux token d'authorization qui est l'id de l'utilisateur
-     * @return les infos du projet avec les rôles utilisateurs
+     * @param userIdStr Un faux token d'accès (id de l'utilisateur)
+     * @return les infos du projet avec id, nom, description, date de début et liste des utilisateurs avec leur rôle sur le projet.
+     * <strong>Exemple de réponse :</strong>
+     * <pre><code>
+     *     {
+     *         "id": 1,
+     *         "name": "Unwelcome Planet",
+     *         "description": "Project de jeu d'arcade en vue de dessus ou le joueur contrôle un manequin pour tirer sur diverses robotos",
+     *         "startDate": "2025-03-01",
+     *         "users": [
+     *              {
+     *                  "id": 1,
+     *                  "name": "Marcus",
+     *                  "email": "marcuspolus@factorymail.com",
+     *                  "role": "ADMIN"
+     *              }
+     *         ]
+     *     }
+     * </pre></code>
      */
     @GetMapping("/{id}/user-roles")
     public ResponseEntity<ProjectUserRoleDto> getProjectWithUserRoles(@PathVariable Long id, @RequestHeader("Authorization") String userIdStr) {
