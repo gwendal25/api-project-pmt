@@ -3,6 +3,8 @@ package com.iscod.api_project_pmt.entities;
 import com.iscod.api_project_pmt.enums.TaskPriority;
 import com.iscod.api_project_pmt.enums.TaskStatus;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import org.joda.time.DateTimeComparator;
 
@@ -21,18 +23,23 @@ public class Task {
     @Column(name="id")
     private Long id;
 
+    @NotBlank
     @Column(name="name")
     private String name;
 
+    @NotBlank
     @Column(name="description", columnDefinition = "TEXT")
     private String description;
 
+    @NotNull
     @Column(name="end_date")
     private Date endDate;
 
+    @NotNull
     @Column(name="task_priority")
     private TaskPriority taskPriority;
 
+    @NotNull
     @Column(name="task_status")
     private TaskStatus taskStatus;
 

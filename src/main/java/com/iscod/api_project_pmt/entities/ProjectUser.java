@@ -2,6 +2,7 @@ package com.iscod.api_project_pmt.entities;
 
 import com.iscod.api_project_pmt.enums.UserRole;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 @Getter
@@ -25,6 +26,7 @@ public class ProjectUser {
     @JoinColumn(name="user_id")
     User user;
 
+    @NotNull
     @Column(name="role")
     UserRole role;
 

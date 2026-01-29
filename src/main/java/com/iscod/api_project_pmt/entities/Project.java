@@ -1,6 +1,8 @@
 package com.iscod.api_project_pmt.entities;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 import java.util.Date;
@@ -20,12 +22,15 @@ public class Project {
     @Column(name = "id")
     private Long id;
 
+    @NotBlank
     @Column(name = "name")
     private String name;
 
+    @NotBlank
     @Column(name = "description", columnDefinition = "TEXT")
     private String description;
 
+    @NotNull
     @Column(name = "start_date")
     private Date startDate;
 
