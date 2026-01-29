@@ -1,7 +1,6 @@
 package com.iscod.api_project_pmt.mappers;
 
 import com.iscod.api_project_pmt.dtos.project.ProjectWithUserRolesDto;
-import com.iscod.api_project_pmt.entities.Project;
 import com.iscod.api_project_pmt.entities.ProjectUser;
 import com.iscod.api_project_pmt.entities.User;
 import org.mapstruct.Mapper;

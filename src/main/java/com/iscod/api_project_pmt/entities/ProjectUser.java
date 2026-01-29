@@ -2,7 +2,6 @@ package com.iscod.api_project_pmt.entities;
 
 import com.iscod.api_project_pmt.enums.UserRole;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
 @Getter

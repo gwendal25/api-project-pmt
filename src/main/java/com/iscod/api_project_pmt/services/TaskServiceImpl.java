@@ -15,8 +15,6 @@ import com.iscod.api_project_pmt.repositories.TaskRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.Date;
-
 @Component
 public class TaskServiceImpl implements TaskService {
     @Autowired
