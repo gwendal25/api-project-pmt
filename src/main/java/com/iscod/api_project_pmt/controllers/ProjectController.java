@@ -178,13 +178,28 @@ public class ProjectController {
     }
 
     /**
-     * Creates a new project and associates it with the authenticated user.
-     * Throws a 403 Forbidden exception if the user is not logged in.
-     *
-     * @param projectRequest The details of the project to be created, including name, description, and start date.
-     * @param userIdStr The user's ID passed as an Authorization header.
-     * @param uriBuilder The URI builder used to construct the location of the newly created project.
-     * @return A ResponseEntity containing the simplified project details (id, name, description, and start date) along with the appropriate HTTP status.
+     * Créer un nouveau projet et l'associe avec l'utilisateur qui le crée en tant qu'administrateur.
+     * @param projectRequest Les détails du projet à créer
+     * @param userIdStr Un faux token d'accès (l'id de l'utilisateur)
+     * @param uriBuilder Le uri Builder qui permet de construire l'url du projet nouvellement crée
+     * @return une ResponseEntity qui contient les informations simplifiées du projet (id, nom, description, et date de début).
+     * <strong>Exemple de requête :</strong>
+     * <pre><code>
+     *     {
+     *         "name": "Projet MagicBlade",
+     *         "description": "un jeu d'action-RPG en VR ou le joueur contrôle un T-76 pour combattre diverses créatures",
+     *         "startDate": "2021-03-01"
+     *     }
+     * </code></pre>
+     * <strong>Exemple de réponse</strong>
+     * <pre><code>
+     *     {
+     *         "id": 1,
+     *         "name": "Projet MagicBlade",
+     *         "description": "un jeu d'action-RPG en VR ou le joueur contrôle un T-76 pour combattre diverses créatures",
+     *         "startDate": "2021-03-01"
+     *     }
+     * </code></pre>
      */
     @PostMapping
     public ResponseEntity<SimpleProjectDto> CreateProject(@RequestBody ProjectRequest projectRequest, @RequestHeader("Authorization") String userIdStr, UriComponentsBuilder uriBuilder) {
