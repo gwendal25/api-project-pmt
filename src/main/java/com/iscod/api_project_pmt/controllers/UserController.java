@@ -23,9 +23,23 @@ public class UserController {
     private final UserService userService;
 
     /**
-     * Cette méthode retourne la liste de tous les utilisateurs.
-     * Utile pour le debug de l'application
-     * @return La liste des utilisateurs avec id, nom et email
+     * Retourne la liste de tous les utilisateurs (debug only)
+     * @return La liste des utilisateurs (id, nom et email)
+     * <strong>Exemple de réponse</strong>
+     * <pre>{@code
+     *  [
+     *      {
+     *          "id": 1,
+     *          "name": "Natasha",
+     *          "email": "natasha@honkaimail.com"
+     *      },
+     *      {
+     *          "id": 2,
+     *          "name": "Gépard",
+     *          "email": "gepardmail@honkaimail.com"
+     *      }
+     *  ]
+     * }</pre>
      */
     @GetMapping
     public List<UserDto> getAllUsers() {
@@ -35,7 +49,15 @@ public class UserController {
     /**
      * Retourne les informations d'un utilisateur grâce à son id
      * @param id l'id de l'utilisateur dont on veut récupérer les informations
-     * @return les informations de l'utilisateur avec id, nom et email
+     * @return les informations de l'utilisateur (id, nom et email)
+     * <strong>Exemple de réponse :</strong>
+     * <pre>{@code
+     *  {
+     *         "id": 1,
+     *         "name": "Natasha",
+     *         "email": "natasha@honkaimail.com"
+     *  }
+     * }</pre>
      */
     @GetMapping("/{id}")
     public ResponseEntity<UserDto> getUser(@PathVariable Long id) {
@@ -48,10 +70,28 @@ public class UserController {
     }
 
     /**
-     * Créer un utilisateur avec les informations envoyées dans userRequest
-     * @param userRequest les informations de l'utilisateur avec nom, email, et mot de passe
-     * @param uriBuilder Le builder pour renvoyer l'url de l'utilisateur
-     * @return Les informations de l'utilisateur crée avec l'url pour accéder aux informations cet utilisateur
+     * Créer un nouvel utilisateur
+     * @param userRequest les informations de l'utilisateur à créer (nom, email, mot de passe)
+     * @param uriBuilder Le uri Builder qui permet de construire l'url de l'utilisateur nouvellement crée
+     * @return Les informations de l'utilisateur nouvellement crée (id, nom, email, mot de passe)
+     * <strong>Exemple de requête :</strong>
+     * <pre>{@code
+     *  {
+     *        "name": "Natasha",
+     *        "email": "natasha@honkaimail.com"
+     *        "password": "undergroundPlayer420**",
+     *        "repeatPassword": "undergroundPlayer420**"
+     * }
+     * }</pre>
+     * <strong>Exemple de réponse :</strong>
+     * <pre>{@code
+     * {
+     *        "id": 1,
+     *        "name": "Natasha",
+     *        "email": "natasha@honkaimail.com"
+     *        "password": "undergroundPlayer420**"
+     * }
+     * }</pre>
      */
     @PostMapping
     public ResponseEntity<UserDto> createUser(@Valid @RequestBody UserRequest userRequest, UriComponentsBuilder uriBuilder) {
@@ -75,6 +115,21 @@ public class UserController {
      * Permet à un utilisateur de faire une fausse connexion en renvoyant les infos de l'utilisateur si il a envoyé la bonne combinaison de mot de passe/email
      * @param userLoginRequest La requête de connexion avec email et mot de passe
      * @return Les informations de l'utilisateur avec id, nom et email
+     * <strong>Exemple de requête :</strong>
+     * <pre>{@code
+     *  {
+     *        "email": "natasha@honkaimail.com"
+     *        "password": "undergroundPlayer420**"
+     * }
+     * }</pre>
+     * <strong>Exemple de réponse :</strong>
+     * <pre>{@code
+     *  {
+     *        "id": 1,
+     *        "name": "Natasha",
+     *        "email": "natasha@honkaimail.com"
+     * }
+     * }</pre>
      */
     @PostMapping("/login")
     public ResponseEntity<UserDto> login(@Valid @RequestBody UserLoginRequest userLoginRequest) {
