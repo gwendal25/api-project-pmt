@@ -36,7 +36,7 @@ public class ProjectController {
      * Cette méthode renvoie la liste de tous les projets dans la base de données (debug only).
      * @return une liste de projets simplifiés avec id, nom, description et date de début de chaque projet
      * <strong>Exemple de réponse :</strong>
-     * <pre><code>
+     * <pre>{@code
      *     [
      *       {
      *         "id": 1,
@@ -45,7 +45,7 @@ public class ProjectController {
      *         "startDate": "2021-03-01"
      *       }
      *     ]
-     * </code></pre>
+     * }</pre>
      */
     @GetMapping
     public List<SimpleProjectDto> getAllProjects() {
@@ -57,8 +57,8 @@ public class ProjectController {
      * @param userIdStr Un faux token d'accès (id de l'utilisateur)
      * @return une liste de projets simplifiés avec id, nom, description, date de début et rôle de l'utilisateur de chaque projet
      * <strong>Exemple de réponse :</strong>
-     * <pre><code>
-     *     [
+     * <pre>{@code
+     *   [
      *     {
      *         "id": 1,
      *         "name": "Project de parc d'attraction en VR",
@@ -66,7 +66,8 @@ public class ProjectController {
      *         "startDate": "2025-03-01",
      *         "userRole": "ADMIN"
      *     }
-     * </code></pre>
+     *   ]
+     * }</pre>
      */
     @GetMapping("/all")
     public ResponseEntity<List<ProjectWithUserRolesDto>> getAllProjectsByUser(@RequestHeader("Authorization") String userIdStr) {
@@ -84,7 +85,7 @@ public class ProjectController {
      * @param userIdStr Un faux token d'accès (id de l'utilisateur)
      * @return Les informations du projet avec id, nom, description, date de début, rôle de l'utilisateur, liste des tâches et liste des utilisateurs.
      * <strong>Exemple de réponse :</strong>
-     * <pre><code>
+     * <pre>{@code
      *     {
      *         "id": 1,
      *         "name": "Project de parc d'attraction en VR",
@@ -112,7 +113,7 @@ public class ProjectController {
      *              "email": "endmin@factorymail.com",
      *         ]
      *     }
-     * </code></pre>
+     * }</pre>
      */
     @GetMapping("/{id}")
     public ResponseEntity<ProjectDto> getProject(@PathVariable Long id, @RequestHeader("Authorization") String userIdStr) {
@@ -140,7 +141,7 @@ public class ProjectController {
      * @param userIdStr Un faux token d'accès (id de l'utilisateur)
      * @return les infos du projet avec id, nom, description, date de début et liste des utilisateurs avec leur rôle sur le projet.
      * <strong>Exemple de réponse :</strong>
-     * <pre><code>
+     * <pre>{@code
      *     {
      *         "id": 1,
      *         "name": "Unwelcome Planet",
@@ -155,7 +156,7 @@ public class ProjectController {
      *              }
      *         ]
      *     }
-     * </pre></code>
+     * }</code>
      */
     @GetMapping("/{id}/user-roles")
     public ResponseEntity<ProjectUserRoleDto> getProjectWithUserRoles(@PathVariable Long id, @RequestHeader("Authorization") String userIdStr) {
@@ -184,22 +185,22 @@ public class ProjectController {
      * @param uriBuilder Le uri Builder qui permet de construire l'url du projet nouvellement crée
      * @return une ResponseEntity qui contient les informations simplifiées du projet (id, nom, description, et date de début).
      * <strong>Exemple de requête :</strong>
-     * <pre><code>
+     * <pre>{@code
      *     {
      *         "name": "Projet MagicBlade",
      *         "description": "un jeu d'action-RPG en VR ou le joueur contrôle un T-76 pour combattre diverses créatures",
      *         "startDate": "2021-03-01"
      *     }
-     * </code></pre>
+     * }</pre>
      * <strong>Exemple de réponse</strong>
-     * <pre><code>
+     * <pre>{@code
      *     {
      *         "id": 1,
      *         "name": "Projet MagicBlade",
      *         "description": "un jeu d'action-RPG en VR ou le joueur contrôle un T-76 pour combattre diverses créatures",
      *         "startDate": "2021-03-01"
      *     }
-     * </code></pre>
+     * }</pre>
      */
     @PostMapping
     public ResponseEntity<SimpleProjectDto> CreateProject(@RequestBody ProjectRequest projectRequest, @RequestHeader("Authorization") String userIdStr, UriComponentsBuilder uriBuilder) {
@@ -226,7 +227,7 @@ public class ProjectController {
      * @param uriBuilder Le uri Builder qui permet de construire l'url de la tâche nouvellement crée
      * @return Une ResponseEntity qui contient les infos de la tâche (id, nom, description, priorité, status, date de fin).
      * <strong>Exemple de requête :</strong>
-     * <pre><code>
+     * <pre>{@code
      *     {
      *         "name": "Ajout du controller de base",
      *         "description": "Ajouter un character controller basique pour marcher, courir et sauter en 3D",
@@ -234,9 +235,9 @@ public class ProjectController {
      *         "taskStatus": "IN_PROGRESS",
      *         "endDate": "2021-03-09"
      *     }
-     * </code></pre>
+     * }</pre>
      * <strong>Exemple de réponse :</strong>
-     * <pre><code>
+     * <pre>{@code
      *     {
      *         "id": 1,
      *         "name": "Ajout du controller de base",
@@ -245,7 +246,7 @@ public class ProjectController {
      *         "taskStatus": "IN_PROGRESS",
      *         "endDate": "2021-03-09"
      *     }
-     * </code></pre>
+     * }</pre>
      */
     @PostMapping("/{id}/tasks")
     public ResponseEntity<SimpleTaskDto> CreateTask(@PathVariable Long id, @RequestBody TaskRequest taskRequest, @RequestHeader("Authorization") String userIdStr, UriComponentsBuilder uriBuilder) {
@@ -284,22 +285,22 @@ public class ProjectController {
      * @param userIdStr Un faux token d'accès (l'id de l'utilisateur)
      * @return Les informations mise à jour du projet (id, nom, description et date de début)
      * <strong>Exemple de requête :</strong>
-     * <pre><code>
+     * <pre>{@code
      *     {
      *         "name": "Projet MagicBlade: Caster Edition",
      *         "description": "un jeu d'action-RPG en VR ou le joueur contrôle un T-76 pour combattre diverses créatures. L'édition finale du jeu avec tout le contenu additionnel gratuit et payant",
      *         "startDate": "2021-03-01"
      *     }
-     * </code></pre>
+     * }</pre>
      * <strong>Exemple de réponse :</strong>
-     * <pre><code>
+     * <pre>{@code
      *     {
      *         "id": 1,
      *         "name": "Projet MagicBlade: Caster Edition",
      *         "description": "un jeu d'action-RPG en VR ou le joueur contrôle un T-76 pour combattre diverses créatures. L'édition finale du jeu avec tout le contenu additionnel gratuit et payant",
      *         "startDate": "2021-03-01"
      *     }
-     * </code></pre>
+     * }</pre>
      */
     @PutMapping("/{id}")
     public ResponseEntity<SimpleProjectDto> UpdateProject(@PathVariable Long id, @RequestBody ProjectRequest projectRequest, @RequestHeader("Authorization") String userIdStr) {
@@ -333,14 +334,14 @@ public class ProjectController {
      * @param userIdStr Un faux token d'accès (l'id de l'utilisateur)
      * @return Une version simplifiée de la relation entre l'utilisateur et le projet
      * <strong>Exemple de requête :</strong>
-     * <pre><code>
+     * <pre>{@code
      *     {
      *         "email": "Natasha",
      *         "userRole": "OBSERVER"
      *     }
-     * </code></pre>
+     * }</pre>
      * <strong>Exemple de réponse :</strong>
-     * <pre><code>
+     * <pre>{@code
      *     {
      *         "project": {
      *             "id": 1,
@@ -355,7 +356,7 @@ public class ProjectController {
      *         },
      *         "role": "OBSERVER"
      *     }
-     * </code></pre>
+     * }</pre>
      */
     @PutMapping("/{id}/add-user")
     public ResponseEntity<ProjectUserDto> AddUserToProject(@PathVariable Long id, @RequestBody ProjectUserRequest projectUserRequest, @RequestHeader("Authorization") String userIdStr){
@@ -395,14 +396,14 @@ public class ProjectController {
      * @param userIdStr Un faux token d'accès (l'id de l'utilisateur)
      * @return Une version simplifiée de la relation entre l'utilisateur et le projet
      * <strong>Exemple de requête :</strong>
-     * <pre><code>
+     * <pre>{@code
      *     {
      *         "userId": 2,
      *         "userRole": "MEMBER"
      *     }
-     * </code></pre>
+     * }</pre>
      * <strong>Exemple de réponse :</strong>
-     * <pre><code>
+     * <pre>{@code
      *     {
      *         "project": {
      *             "id": 1,
@@ -417,7 +418,7 @@ public class ProjectController {
      *         },
      *         "role": "MEMBER"
      *     }
-     * </code></pre>
+     * }</pre>
      */
     @PutMapping("/{id}/change-user-role")
     public ResponseEntity<ProjectUserDto> ChangeUserRole(@PathVariable Long id, @RequestBody ProjectUserIdRequest projectUserIdRequest, @RequestHeader("Authorization") String userIdStr) {
