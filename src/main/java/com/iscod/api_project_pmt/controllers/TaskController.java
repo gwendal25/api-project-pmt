@@ -320,11 +320,23 @@ public class TaskController {
     }
 
     /**
-     * Cette méthode active les notifications par mail lorsque la tâche est assigné à un nouvel utilisateur
+     * Active les notifications par mail lorsque la tâche est assigné à un nouvel utilisateur
      * @param id l'id de la tâche a assigné
      * @param taskNotificationRequest Un objet qui contient le statut des notifications par mail d'assignation de tâches
-     * @param userIdStr Un faux token d'authorisation qui est l'id de l'utilisateur
-     * @return Le statut de notification par mail lors de l'assignation de la tâche
+     * @param userIdStr Un faux token d'accès (id de l'utilisateur)
+     * @return Un objet qui contient le statut de notification par mail lors de l'assignation de la tâche
+     * <strong>Exemple de requête :</strong>
+     * <pre>{@code
+     * {
+     *     "isNotified": true
+     * }
+     * }</pre>
+     * <strong>Exemple de réponse :</strong>
+     * <pre>{@code
+     * {
+     *     "hasNotifications": true
+     * }
+     * }</pre>
      */
     @PutMapping("/{id}/set-assign-notifications")
     public ResponseEntity<TaskSetNotificationDto> setAssignNotifications(@PathVariable Long id, @RequestBody TaskNotificationRequest taskNotificationRequest, @RequestHeader("Authorization") String userIdStr) {
