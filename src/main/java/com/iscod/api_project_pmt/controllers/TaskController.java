@@ -263,6 +263,25 @@ public class TaskController {
         return ResponseEntity.ok(taskService.getProjectTaskDto(task, newUser));
     }
 
+    /**
+     * Assigne une tâche à un utilisateur faisant partie du projet
+     * @param id l'id de la tâche à assigner
+     * @param userIdStr Un faux token d'accès (id de l'utilisateur)
+     * @return Les données complètes de la tâche (id, nom, description, priorité, status, date de fin, utilisateur et status des notifications par mail)
+     * <strong>Exemple de réponse :</strong>
+     * <pre>{@code
+     *  {
+     *     "id": 1,
+     *     "name": "Ajout du controller de base",
+     *     "description": "Ajouter un character controller basique pour marcher, courir et sauter en 3D",
+     *     "taskPriority": "HIGH",
+     *     "taskStatus": "IN_PROGRESS",
+     *     "endDate": "2021-03-09",
+     *     "user": null,
+     *     "isNotified": true
+     * }
+     * }</pre>
+     */
     @PutMapping("/{id}/unassign")
     public ResponseEntity<ProjectTaskDto> unassignTask(@PathVariable Long id, @RequestHeader("Authorization") String userIdStr) {
         Long userId;
