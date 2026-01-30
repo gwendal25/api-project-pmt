@@ -120,11 +120,32 @@ public class TaskController {
     }
 
     /**
-     * Cette méthode met à jour les informations d'une tâche
+     * Met à jour les informations d'une tâche et crée une nouvelle entrée dans l'historique des modifications de cette tâche
      * @param id L'id de la tâche à mettre à jour
-     * @param taskRequest les données de mise à jour de la tâche avec nom, description, priorité, status et date de fin
-     * @param userIdStr Un faux token d'authorisation qui est l'id de l'utilisateur
-     * @return Les données de la tâche mise à jour avec id, nom, description, priorité, status et date de fin
+     * @param taskRequest les données de mise à jour de la tâche (nom, description, priorité, status et date de fin)
+     * @param userIdStr Un faux token d'accès (id de l'utilisateur)
+     * @return Les données de la tâche mise à jour (id, nom, description, priorité, status et date de fin)
+     * <strong>Exemple de requête :</strong>
+     * <pre>{@code
+     *  {
+     *      "name": "Ajout du controller de base",
+     *      "description": "Ajouter un character controller basique pour marcher, courir et sauter en 3D",
+     *      "taskPriority": "HIGH",
+     *      "taskStatus": "IN_PROGRESS",
+     *      "endDate": "2021-03-09"
+     *  }
+     * }</pre>
+     * <strong>Exemple de réponse :</strong>
+     * <pre>{@code
+     * {
+     *      "id": 1,
+     *      "name": "Ajout du controller de base",
+     *      "description": "Ajouter un character controller basique pour marcher, courir et sauter en 3D",
+     *      "taskPriority": "HIGH",
+     *      "taskStatus": "IN_PROGRESS",
+     *      "endDate": "2021-03-09"
+     *  }
+     * }</pre>
      */
     @PutMapping("/{id}")
     public ResponseEntity<SimpleTaskDto> updateTask(@PathVariable Long id, @Valid @RequestBody TaskRequest taskRequest, @RequestHeader("Authorization") String userIdStr) {
