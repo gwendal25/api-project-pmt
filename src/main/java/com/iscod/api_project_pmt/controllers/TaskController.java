@@ -77,10 +77,21 @@ public class TaskController {
     }
 
     /**
-     * Cette méthode renvoie les données d'une tâche sans les entrées d'historique associées
+     * Renvoie les données complète d'une tâche sans les entrées d'historique associées
      * @param id L'id de la tâche à récupérer
-     * @param userIdStr Un faux token d'authorization qui est l'id de l'utilisateur
-     * @return les données de la tâche avec id, nom, description, priorité, status et date de fin
+     * @param userIdStr Un faux token d'accès (id de l'utilisateur)
+     * @return les données de la tâche (id, nom, description, priorité, status et date de fin)
+     * <strong>Exemple de réponse :</strong>
+     * <pre>{@code
+     * {
+     *     "id": 1,
+     *     "name": "Ajout du controller de base",
+     *     "description": "Ajouter un character controller basique pour marcher, courir et sauter en 3D",
+     *     "taskPriority": "HIGH",
+     *     "taskStatus": "IN_PROGRESS",
+     *     "endDate": "2021-03-09"
+     * }
+     * }</pre>
      */
     @GetMapping("/{id}/no-history")
     public ResponseEntity<SimpleTaskDto> getTaskWithoutHistory(@PathVariable Long id, @Valid @RequestHeader("Authorization") String userIdStr) {
