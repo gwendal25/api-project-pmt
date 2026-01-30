@@ -179,11 +179,33 @@ public class TaskController {
     }
 
     /**
-     * Cette méthode assigne une tâche à un utilisateur
+     * Assigne une tâche à un utilisateur faisant partie du projet
      * @param id l'id de la tâche à assigner
-     * @param taskUserRequest Un objet qui contient l'id de l'user a assigné à la tâche
-     * @param userIdStr Un faux token d'authorisation qui est l'id de l'utilisateur
-     * @return Les données de la tâche avec l'utilisateur assigné
+     * @param taskUserRequest Un objet qui contient l'id de l'utilisateur a assigné à la tâche
+     * @param userIdStr Un faux token d'accès (id de l'utilisateur)
+     * @return Les données complètes de la tâche (id, nom, description, priorité, status, date de fin, utilisateur et status des notifications par mail)
+     * <strong>Exemple de requête :</strong>
+     * <pre>{@code
+     *  {
+     *      "userId": 2
+     *  }
+     * }</pre>
+     * <strong>Exemple de réponse :</strong>
+     * <pre>{@code
+     *  {
+     *     "id": 1,
+     *     "name": "Ajout du controller de base",
+     *     "description": "Ajouter un character controller basique pour marcher, courir et sauter en 3D",
+     *     "taskPriority": "HIGH",
+     *     "taskStatus": "IN_PROGRESS",
+     *     "endDate": "2021-03-09",
+     *     "user": {
+     *         "id": 2,
+     *         "name": "Chuchodal"
+     *     }
+     *     "isNotified": true
+     * }
+     * }</pre>
      */
     @PutMapping("/{id}/assign")
     public ResponseEntity<ProjectTaskDto> assignTask(@PathVariable Long id, @RequestBody TaskUserRequest taskUserRequest, @RequestHeader("Authorization") String userIdStr) {
