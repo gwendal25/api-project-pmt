@@ -25,10 +25,30 @@ public class TaskController {
     private final ProjectUserService projectUserService;
 
     /**
-     * Cette méthode récupère les données d'une tâche et les renvoie
+     * Récupère les données complètes d'une tâche avec son historique et les renvoie
      * @param id L'id de la tâche à récupérer
-     * @param userIdStr Un faux token d'authorization qui est l'id de l'utilisateur
-     * @return les données de la tâche avec id, nom, description, priorité, status, date de fin et historique
+     * @param userIdStr Un faux token d'accès (id de l'utilisateur)
+     * @return Les données de la tâche (id, nom, description, priorité, status, date de fin et historique des modifications
+     * <strong>Exemple de réponse :</strong>
+     * <pre>{@code
+     * {
+     *     "id": 1,
+     *     "name": "Ajout du controller de base",
+     *     "description": "Ajouter un character controller basique pour marcher, courir et sauter en 3D",
+     *     "taskPriority": "HIGH",
+     *     "taskStatus": "IN_PROGRESS",
+     *     "endDate": "2021-03-09",
+     *     "taskHistoryEntries": [
+     *          "id": 1,
+     *          "name": "Ajout du controller de base",
+     *          "description": "Ajouter un character controller basique en 3D",
+     *          "taskPriority": "HIGH",
+     *          "taskStatus": "NOT_STARTED",
+     *          "endDate": "2021-03-09"
+     *          "editDate": "2021-03-09 9:15:00"
+     *     ]
+     * }
+     * }</pre>
      */
     @GetMapping("/{id}")
     public ResponseEntity<TaskDto> getTask(@PathVariable Long id, @Valid @RequestHeader("Authorization") String userIdStr) {
