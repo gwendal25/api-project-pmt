@@ -1,0 +1,37 @@
+package com.iscod.api_project_pmt.dtos.project;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.iscod.api_project_pmt.dtos.task.ProjectTaskDto;
+import com.iscod.api_project_pmt.dtos.user.UserDto;
+import com.iscod.api_project_pmt.enums.UserRole;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+import java.util.Date;
+import java.util.List;
+
+@AllArgsConstructor
+@NoArgsConstructor
+@Setter
+@Getter
+public class ProjectDto {
+    private Long id;
+    private String name;
+    private String description;
+    @JsonFormat(pattern = "yyyy-MM-dd")
+    private Date startDate;
+    private UserRole userRole;
+    private List<ProjectTaskDto> tasks;
+    @JsonProperty("users")
+    private List<UserDto> users;
+
+    public ProjectDto(Long id, String name, String description, Date startDate) {
+        this.id = id;
+        this.name = name;
+        this.description = description;
+        this.startDate = startDate;
+    }
+}

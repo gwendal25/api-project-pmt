@@ -1,0 +1,17 @@
+package com.iscod.api_project_pmt.mappers;
+
+import com.iscod.api_project_pmt.dtos.user.TaskUserDto;
+import com.iscod.api_project_pmt.dtos.user.UserDto;
+import com.iscod.api_project_pmt.dtos.user.UserRequest;
+import com.iscod.api_project_pmt.entities.User;
+import org.mapstruct.Mapper;
+
+import java.util.List;
+
+@Mapper(componentModel = "spring")
+public interface UserMapper {
+    UserDto toDto(User user);
+    User toUser(UserRequest userRequest);
+    TaskUserDto toTaskUserDto(User user);
+    List<TaskUserDto> toTaskUserDtoList(List<User> users);
+}
