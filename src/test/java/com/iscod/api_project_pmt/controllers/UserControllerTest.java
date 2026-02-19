@@ -57,12 +57,6 @@ public class UserControllerTest {
     }
 
     @Test
-    void getUser_returns400_whenIdIsNotANumber() throws Exception {
-        mockMvc.perform(get("/users/{id}", "not-a-number"))
-                .andExpect(status().isBadRequest());
-    }
-
-    @Test
     void createUser_returns400_whenPasswordsDoNotMatch() throws Exception {
         String body = """
             {

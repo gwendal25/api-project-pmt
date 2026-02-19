@@ -39,7 +39,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc(addFilters = false)
 @ExtendWith(MockitoExtension.class)
 @WebMvcTest(TaskController.class)
-class TaskControllerTest {
+public class TaskControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
