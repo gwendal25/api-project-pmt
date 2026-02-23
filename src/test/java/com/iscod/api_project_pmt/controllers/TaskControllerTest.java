@@ -63,7 +63,7 @@ public class TaskControllerTest {
 
         when(userService.getUserById(10L)).thenReturn(null);
 
-        mockMvc.perform(get("/tasks/{id}", taskId)
+        mockMvc.perform(get("/api/tasks/{id}", taskId)
                         .header("Authorization", authorizationHeader))
                 .andExpect(status().isForbidden());
     }
@@ -79,7 +79,7 @@ public class TaskControllerTest {
         when(userService.getUserById(10L)).thenReturn(user);
         when(taskService.getTaskById(taskId)).thenReturn(null);
 
-        mockMvc.perform(get("/tasks/{id}", taskId)
+        mockMvc.perform(get("/api/tasks/{id}", taskId)
                         .header("Authorization", authorizationHeader))
                 .andExpect(status().isNotFound());
     }
@@ -103,7 +103,7 @@ public class TaskControllerTest {
         when(taskService.getTaskById(taskId)).thenReturn(task);
         when(projectUserService.getByProjectAndUser(project, user)).thenReturn(null);
 
-        mockMvc.perform(get("/tasks/{id}", taskId)
+        mockMvc.perform(get("/api/tasks/{id}", taskId)
                         .header("Authorization", authorizationHeader))
                 .andExpect(status().isForbidden());
     }
@@ -136,7 +136,7 @@ public class TaskControllerTest {
         when(projectUserService.getByProjectAndUser(project, user)).thenReturn(projectUser);
         when(taskService.getTaskDto(task)).thenReturn(dto);
 
-        mockMvc.perform(get("/tasks/{id}", taskId)
+        mockMvc.perform(get("/api/tasks/{id}", taskId)
                         .header("Authorization", authorizationHeader)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -152,7 +152,7 @@ public class TaskControllerTest {
     void getTask_returns400_whenAuthorizationHeaderIsNotANumber() throws Exception {
         Long taskId = 42L;
 
-        mockMvc.perform(get("/tasks/{id}", taskId)
+        mockMvc.perform(get("/api/tasks/{id}", taskId)
                         .header("Authorization", "not-a-number"))
                 .andExpect(status().isBadRequest());
     }
@@ -164,7 +164,7 @@ public class TaskControllerTest {
 
         when(userService.getUserById(10L)).thenReturn(null);
 
-        mockMvc.perform(get("/tasks/{id}/no-history", taskId)
+        mockMvc.perform(get("/api/tasks/{id}/no-history", taskId)
                         .header("Authorization", authorizationHeader))
                 .andExpect(status().isForbidden());
     }
@@ -180,7 +180,7 @@ public class TaskControllerTest {
         when(userService.getUserById(10L)).thenReturn(user);
         when(taskService.getTaskById(taskId)).thenReturn(null);
 
-        mockMvc.perform(get("/tasks/{id}/no-history", taskId)
+        mockMvc.perform(get("/api/tasks/{id}/no-history", taskId)
                         .header("Authorization", authorizationHeader))
                 .andExpect(status().isNotFound());
     }
@@ -204,7 +204,7 @@ public class TaskControllerTest {
         when(taskService.getTaskById(taskId)).thenReturn(task);
         when(projectUserService.getByProjectAndUser(project, user)).thenReturn(null);
 
-        mockMvc.perform(get("/tasks/{id}/no-history", taskId)
+        mockMvc.perform(get("/api/tasks/{id}/no-history", taskId)
                         .header("Authorization", authorizationHeader))
                 .andExpect(status().isForbidden());
     }
@@ -236,7 +236,7 @@ public class TaskControllerTest {
         when(projectUserService.getByProjectAndUser(project, user)).thenReturn(projectUser);
         when(taskService.getSimpleTaskDto(task)).thenReturn(dto);
 
-        mockMvc.perform(get("/tasks/{id}/no-history", taskId)
+        mockMvc.perform(get("/api/tasks/{id}/no-history", taskId)
                         .header("Authorization", authorizationHeader)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -251,7 +251,7 @@ public class TaskControllerTest {
     void getTaskWithoutHistory_returns400_whenAuthorizationHeaderIsNotANumber() throws Exception {
         Long taskId = 42L;
 
-        mockMvc.perform(get("/tasks/{id}/no-history", taskId)
+        mockMvc.perform(get("/api/tasks/{id}/no-history", taskId)
                         .header("Authorization", "not-a-number"))
                 .andExpect(status().isBadRequest());
     }
@@ -262,7 +262,7 @@ public class TaskControllerTest {
 
         String body = "{\"name\": \"Task Updated\",\"description\": \"Desc updated\", \"taskPriority\": \"MEDIUM\", \"taskStatus\": \"NOT_STARTED\", \"endDate\": \"2030-01-01 07:00:00\"} ";
 
-        mockMvc.perform(put("/tasks/{id}", taskId)
+        mockMvc.perform(put("/api/tasks/{id}", taskId)
                         .header("Authorization", "not-a-number")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
@@ -278,7 +278,7 @@ public class TaskControllerTest {
 
         when(userService.getUserById(10L)).thenReturn(null);
 
-        mockMvc.perform(put("/tasks/{id}", taskId)
+        mockMvc.perform(put("/api/tasks/{id}", taskId)
                         .header("Authorization", authorizationHeader)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
@@ -298,7 +298,7 @@ public class TaskControllerTest {
         when(userService.getUserById(10L)).thenReturn(user);
         when(taskService.getTaskById(taskId)).thenReturn(null);
 
-        mockMvc.perform(put("/tasks/{id}", taskId)
+        mockMvc.perform(put("/api/tasks/{id}", taskId)
                         .header("Authorization", authorizationHeader)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
@@ -326,7 +326,7 @@ public class TaskControllerTest {
         when(taskService.getTaskById(taskId)).thenReturn(task);
         when(projectUserService.getByProjectAndUser(project, user)).thenReturn(null);
 
-        mockMvc.perform(put("/tasks/{id}", taskId)
+        mockMvc.perform(put("/api/tasks/{id}", taskId)
                         .header("Authorization", authorizationHeader)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
@@ -356,7 +356,7 @@ public class TaskControllerTest {
         when(taskService.getTaskById(taskId)).thenReturn(task);
         when(projectUserService.getByProjectAndUser(project, user)).thenReturn(projectUser);
 
-        mockMvc.perform(put("/tasks/{id}", taskId)
+        mockMvc.perform(put("/api/tasks/{id}", taskId)
                         .header("Authorization", authorizationHeader)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
@@ -396,7 +396,7 @@ public class TaskControllerTest {
         when(taskService.addTaskHistoryEntry(any(), eq(originalTask))).thenReturn(updatedTask);
         when(taskService.getSimpleTaskDto(updatedTask)).thenReturn(updatedDto);
 
-        mockMvc.perform(put("/tasks/{id}", taskId)
+        mockMvc.perform(put("/api/tasks/{id}", taskId)
                         .header("Authorization", authorizationHeader)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body)
@@ -414,7 +414,7 @@ public class TaskControllerTest {
         Long taskId = 42L;
         String body = "{\"userId\": 20}";
 
-        mockMvc.perform(put("/tasks/{id}/assign", taskId)
+        mockMvc.perform(put("/api/tasks/{id}/assign", taskId)
                         .header("Authorization", "not-a-number")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
@@ -428,7 +428,7 @@ public class TaskControllerTest {
 
         when(userService.getUserById(10L)).thenReturn(null);
 
-        mockMvc.perform(put("/tasks/{id}/assign", taskId)
+        mockMvc.perform(put("/api/tasks/{id}/assign", taskId)
                         .header("Authorization", "10")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
@@ -446,7 +446,7 @@ public class TaskControllerTest {
         when(userService.getUserById(10L)).thenReturn(user);
         when(taskService.getTaskById(taskId)).thenReturn(null);
 
-        mockMvc.perform(put("/tasks/{id}/assign", taskId)
+        mockMvc.perform(put("/api/tasks/{id}/assign", taskId)
                         .header("Authorization", "10")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
@@ -472,7 +472,7 @@ public class TaskControllerTest {
         when(taskService.getTaskById(taskId)).thenReturn(task);
         when(projectUserService.getByProjectAndUser(project, user)).thenReturn(null);
 
-        mockMvc.perform(put("/tasks/{id}/assign", taskId)
+        mockMvc.perform(put("/api/tasks/{id}/assign", taskId)
                         .header("Authorization", "10")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
@@ -500,7 +500,7 @@ public class TaskControllerTest {
         when(taskService.getTaskById(taskId)).thenReturn(task);
         when(projectUserService.getByProjectAndUser(project, user)).thenReturn(projectUser);
 
-        mockMvc.perform(put("/tasks/{id}/assign", taskId)
+        mockMvc.perform(put("/api/tasks/{id}/assign", taskId)
                         .header("Authorization", "10")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
@@ -529,7 +529,7 @@ public class TaskControllerTest {
         when(projectUserService.getByProjectAndUser(project, user)).thenReturn(projectUser);
         when(userService.getUserById(20L)).thenReturn(null);
 
-        mockMvc.perform(put("/tasks/{id}/assign", taskId)
+        mockMvc.perform(put("/api/tasks/{id}/assign", taskId)
                         .header("Authorization", "10")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
@@ -562,7 +562,7 @@ public class TaskControllerTest {
         when(userService.getUserById(20L)).thenReturn(newUser);
         when(projectUserService.getByProjectAndUser(project, newUser)).thenReturn(null);
 
-        mockMvc.perform(put("/tasks/{id}/assign", taskId)
+        mockMvc.perform(put("/api/tasks/{id}/assign", taskId)
                         .header("Authorization", "10")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
@@ -600,7 +600,7 @@ public class TaskControllerTest {
         when(userService.getUserById(20L)).thenReturn(newUser);
         when(projectUserService.getByProjectAndUser(project, newUser)).thenReturn(newProjectUser);
 
-        mockMvc.perform(put("/tasks/{id}/assign", taskId)
+        mockMvc.perform(put("/api/tasks/{id}/assign", taskId)
                         .header("Authorization", "10")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
@@ -662,7 +662,7 @@ public class TaskControllerTest {
         when(taskService.addUser(task, newUser)).thenReturn(taskAssigned);
         when(taskService.getProjectTaskDto(taskAssigned, newUser)).thenReturn(dto);
 
-        mockMvc.perform(put("/tasks/{id}/assign", taskId)
+        mockMvc.perform(put("/api/tasks/{id}/assign", taskId)
                         .header("Authorization", "10")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body)
@@ -732,7 +732,7 @@ public class TaskControllerTest {
         when(taskService.addUser(task, newUser)).thenReturn(taskAssigned);
         when(taskService.getProjectTaskDto(taskAssigned, newUser)).thenReturn(dto);
 
-        mockMvc.perform(put("/tasks/{id}/assign", taskId)
+        mockMvc.perform(put("/api/tasks/{id}/assign", taskId)
                         .header("Authorization", "10")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body)
@@ -753,7 +753,7 @@ public class TaskControllerTest {
     void unassignTask_returns400_whenAuthorizationHeaderIsNotANumber() throws Exception {
         Long taskId = 42L;
 
-        mockMvc.perform(put("/tasks/{id}/unassign", taskId)
+        mockMvc.perform(put("/api/tasks/{id}/unassign", taskId)
                         .header("Authorization", "not-a-number"))
                 .andExpect(status().isBadRequest());
     }
@@ -764,7 +764,7 @@ public class TaskControllerTest {
 
         when(userService.getUserById(10L)).thenReturn(null);
 
-        mockMvc.perform(put("/tasks/{id}/unassign", taskId)
+        mockMvc.perform(put("/api/tasks/{id}/unassign", taskId)
                         .header("Authorization", "10"))
                 .andExpect(status().isForbidden());
     }
@@ -779,7 +779,7 @@ public class TaskControllerTest {
         when(userService.getUserById(10L)).thenReturn(user);
         when(taskService.getTaskById(taskId)).thenReturn(null);
 
-        mockMvc.perform(put("/tasks/{id}/unassign", taskId)
+        mockMvc.perform(put("/api/tasks/{id}/unassign", taskId)
                         .header("Authorization", "10"))
                 .andExpect(status().isNotFound());
     }
@@ -802,7 +802,7 @@ public class TaskControllerTest {
         when(taskService.getTaskById(taskId)).thenReturn(task);
         when(projectUserService.getByProjectAndUser(project, user)).thenReturn(null);
 
-        mockMvc.perform(put("/tasks/{id}/unassign", taskId)
+        mockMvc.perform(put("/api/tasks/{id}/unassign", taskId)
                         .header("Authorization", "10"))
                 .andExpect(status().isForbidden());
     }
@@ -827,7 +827,7 @@ public class TaskControllerTest {
         when(taskService.getTaskById(taskId)).thenReturn(task);
         when(projectUserService.getByProjectAndUser(project, user)).thenReturn(projectUser);
 
-        mockMvc.perform(put("/tasks/{id}/unassign", taskId)
+        mockMvc.perform(put("/api/tasks/{id}/unassign", taskId)
                         .header("Authorization", "10"))
                 .andExpect(status().isForbidden());
     }
@@ -853,7 +853,7 @@ public class TaskControllerTest {
         when(taskService.getTaskById(taskId)).thenReturn(task);
         when(projectUserService.getByProjectAndUser(project, user)).thenReturn(projectUser);
 
-        mockMvc.perform(put("/tasks/{id}/unassign", taskId)
+        mockMvc.perform(put("/api/tasks/{id}/unassign", taskId)
                         .header("Authorization", "10"))
                 .andExpect(status().isForbidden());
     }
@@ -887,7 +887,7 @@ public class TaskControllerTest {
         when(projectUserService.getByProjectAndUser(project, requester)).thenReturn(projectUser);
         when(taskService.getProjectTaskDto(task, null)).thenReturn(dto);
 
-        mockMvc.perform(put("/tasks/{id}/unassign", taskId)
+        mockMvc.perform(put("/api/tasks/{id}/unassign", taskId)
                         .header("Authorization", "10")
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -900,7 +900,7 @@ public class TaskControllerTest {
         Long taskId = 42L;
         String body = "{\"isNotified\": true}";
 
-        mockMvc.perform(put("/tasks/{id}/set-assign-notifications", taskId)
+        mockMvc.perform(put("/api/tasks/{id}/set-assign-notifications", taskId)
                         .header("Authorization", "not-a-number")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
@@ -914,7 +914,7 @@ public class TaskControllerTest {
 
         when(userService.getUserById(10L)).thenReturn(null);
 
-        mockMvc.perform(put("/tasks/{id}/set-assign-notifications", taskId)
+        mockMvc.perform(put("/api/tasks/{id}/set-assign-notifications", taskId)
                         .header("Authorization", "10")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
@@ -932,7 +932,7 @@ public class TaskControllerTest {
         when(userService.getUserById(10L)).thenReturn(user);
         when(taskService.getTaskById(taskId)).thenReturn(null);
 
-        mockMvc.perform(put("/tasks/{id}/set-assign-notifications", taskId)
+        mockMvc.perform(put("/api/tasks/{id}/set-assign-notifications", taskId)
                         .header("Authorization", "10")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
@@ -958,7 +958,7 @@ public class TaskControllerTest {
         when(taskService.getTaskById(taskId)).thenReturn(task);
         when(projectUserService.getByProjectAndUser(project, user)).thenReturn(null);
 
-        mockMvc.perform(put("/tasks/{id}/set-assign-notifications", taskId)
+        mockMvc.perform(put("/api/tasks/{id}/set-assign-notifications", taskId)
                         .header("Authorization", "10")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
@@ -986,7 +986,7 @@ public class TaskControllerTest {
         when(taskService.getTaskById(taskId)).thenReturn(task);
         when(projectUserService.getByProjectAndUser(project, user)).thenReturn(projectUser);
 
-        mockMvc.perform(put("/tasks/{id}/set-assign-notifications", taskId)
+        mockMvc.perform(put("/api/tasks/{id}/set-assign-notifications", taskId)
                         .header("Authorization", "10")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body)
@@ -1016,7 +1016,7 @@ public class TaskControllerTest {
         when(taskService.getTaskById(taskId)).thenReturn(task);
         when(projectUserService.getByProjectAndUser(project, user)).thenReturn(projectUser);
 
-        mockMvc.perform(put("/tasks/{id}/set-assign-notifications", taskId)
+        mockMvc.perform(put("/api/tasks/{id}/set-assign-notifications", taskId)
                         .header("Authorization", "10")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body)

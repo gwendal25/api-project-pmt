@@ -17,7 +17,7 @@ import org.springframework.web.server.ResponseStatusException;
 @RestController
 @AllArgsConstructor
 @CrossOrigin(origins = "http://localhost:4200")
-@RequestMapping("/tasks")
+@RequestMapping("/api/tasks")
 public class TaskController {
     private final EmailService emailService;
     private final UserService userService;
