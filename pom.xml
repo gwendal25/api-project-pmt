@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>com.iscod</groupId>
 	<artifactId>api-project-pmt</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>1.0.0</version>
 	<name>api-project-pmt</name>
 	<description>The backend API of project PMT</description>
 	<url/>
