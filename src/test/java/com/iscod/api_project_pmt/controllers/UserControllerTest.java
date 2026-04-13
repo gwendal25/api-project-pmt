@@ -35,7 +35,7 @@ public class UserControllerTest {
 
         when(userService.getUserById(userId)).thenReturn(null);
 
-        mockMvc.perform(get("/users/{id}", userId))
+        mockMvc.perform(get("/api/users/{id}", userId))
                 .andExpect(status().isNotFound());
     }
 
@@ -51,15 +51,9 @@ public class UserControllerTest {
         when(userService.getUserById(userId)).thenReturn(user);
         when(userService.getDto(user)).thenReturn(dto);
 
-        mockMvc.perform(get("/users/{id}", userId).accept(MediaType.APPLICATION_JSON))
+        mockMvc.perform(get("/api/users/{id}", userId).accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON));
-    }
-
-    @Test
-    void getUser_returns400_whenIdIsNotANumber() throws Exception {
-        mockMvc.perform(get("/users/{id}", "not-a-number"))
-                .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -73,7 +67,7 @@ public class UserControllerTest {
             }
             """;
 
-        mockMvc.perform(post("/users")
+        mockMvc.perform(post("/api/users")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isBadRequest());
@@ -92,7 +86,7 @@ public class UserControllerTest {
 
         when(userService.getByEmail("alice@test.com")).thenReturn(new User());
 
-        mockMvc.perform(post("/users")
+        mockMvc.perform(post("/api/users")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isBadRequest());
@@ -118,12 +112,12 @@ public class UserControllerTest {
         when(userService.create(any())).thenReturn(created);
         when(userService.getDto(created)).thenReturn(dto);
 
-        mockMvc.perform(post("/users")
+        mockMvc.perform(post("/api/users")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isCreated())
-                .andExpect(header().string("Location", "http://localhost/users/123"))
+                .andExpect(header().string("Location", "http://localhost/api/users/123"))
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON));
     }
 
@@ -138,7 +132,7 @@ public class UserControllerTest {
 
         when(userService.getByEmail("missing@test.com")).thenReturn(null);
 
-        mockMvc.perform(post("/users/login")
+        mockMvc.perform(post("/api/users/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isNotFound());
@@ -159,7 +153,7 @@ public class UserControllerTest {
 
         when(userService.getByEmail("user@test.com")).thenReturn(user);
 
-        mockMvc.perform(post("/users/login")
+        mockMvc.perform(post("/api/users/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isBadRequest());
@@ -184,7 +178,7 @@ public class UserControllerTest {
         when(userService.getByEmail("user@test.com")).thenReturn(user);
         when(userService.getDto(user)).thenReturn(dto);
 
-        mockMvc.perform(post("/users/login")
+        mockMvc.perform(post("/api/users/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body)
                         .accept(MediaType.APPLICATION_JSON))

@@ -1,7 +1,7 @@
 services:
   mysql-db:
-    container_name: tmp-mysql-spring-boot
-    image: mysql:8.0
+    container_name: mysql-db
+    image: mysql:8.4.7
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_DATABASE: ${MYSQL_DATABASE}
@@ -15,33 +15,27 @@ services:
       - spring-cloud-network
     restart: unless-stopped
     healthcheck:
-      test:
-        [
-          "CMD-SHELL",
-          "mysqladmin ping -h 127.0.0.1 -P 3306 --protocol=tcp -u root -p\"$MYSQL_ROOT_PASSWORD\" || exit 1"
-        ]
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}" ]
       interval: 10s
       timeout: 5s
-      retries: 10
-      start_period: 60s
-
-
+      retries: 5
+      start_period: 30s          # gives MySQL time to initialize on first run
   project-server:
     container_name: tmp-server
-    build: .
+    image: gwendal25/api-project-pmt
     ports:
       - "8081:8081"
-    depends_on:
-      mysql-db:
-        condition: service_healthy
     environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://${MYSQL_HOST}:${MYSQL_PORT}/${MYSQL_DATABASE}?${MYSQL_JDBC_PARAMS}
+      SPRING_DATASOURCE_USERNAME: ${MYSQL_USER}
+      SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD}
       MYSQL_HOST: ${MYSQL_HOST}
-      MYSQL_URL: jdbc:mysql://${MYSQL_HOST}:${MYSQL_PORT}/${MYSQL_DATABASE}?${MYSQL_JDBC_PARAMS}
-      MYSQL_USERNAME: ${MYSQL_USER}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-      SERVER_PORT: ${SERVER_PORT}
     networks:
       - spring-cloud-network
+    depends_on:
+      mysql-db:
+        condition: service_healthy    # ← this is the critical change
+    restart: on-failure:10
 
 networks:
   spring-cloud-network:

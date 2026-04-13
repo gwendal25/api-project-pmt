@@ -18,7 +18,7 @@ import java.util.List;
 @RestController
 @AllArgsConstructor
 @CrossOrigin(origins = "http://localhost:4200")
-@RequestMapping("/users")
+@RequestMapping("/api/users")
 public class UserController {
     private final UserService userService;
 
@@ -106,7 +106,7 @@ public class UserController {
 
         User newUser = userService.create(userRequest);
         return ResponseEntity.created(uriBuilder
-                .path("/users/{id}")
+                .path("/api/users/{id}")
                 .buildAndExpand(newUser.getId()).toUri())
                 .body(userService.getDto(newUser));
     }

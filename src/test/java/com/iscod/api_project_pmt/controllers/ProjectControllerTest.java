@@ -55,7 +55,7 @@ public class ProjectControllerTest {
         when(projectService.getAllProjects()).thenReturn(List.of());
 
         // Act and Assert
-        mockMvc.perform(get("/projects")
+        mockMvc.perform(get("/api/projects")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(0));
@@ -81,7 +81,7 @@ public class ProjectControllerTest {
         when(projectService.getProjectDto(project, user, projectUser)).thenReturn(projectDto);
 
         // Act and Assert
-        mockMvc.perform(get("/projects/{id}", projectId)
+        mockMvc.perform(get("/api/projects/{id}", projectId)
                         .header("Authorization", userId.toString())
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
@@ -99,7 +99,7 @@ public class ProjectControllerTest {
         when(projectService.getProjectById(projectId)).thenReturn(null);
 
         // Act and Assert
-        mockMvc.perform(get("/projects/{id}", projectId)
+        mockMvc.perform(get("/api/projects/{id}", projectId)
                         .header("Authorization", userId.toString())
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
@@ -121,7 +121,7 @@ public class ProjectControllerTest {
         when(projectUserService.getByProjectAndUser(project, user)).thenReturn(null);
 
         // Act and Assert
-        mockMvc.perform(get("/projects/{id}", projectId)
+        mockMvc.perform(get("/api/projects/{id}", projectId)
                         .header("Authorization", userId.toString())
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isForbidden());
@@ -136,7 +136,7 @@ public class ProjectControllerTest {
         when(userService.getUserById(userId)).thenReturn(null);
 
         // Act and Assert
-        mockMvc.perform(get("/projects/{id}", projectId)
+        mockMvc.perform(get("/api/projects/{id}", projectId)
                         .header("Authorization", userId.toString())
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isForbidden());
@@ -168,7 +168,7 @@ public class ProjectControllerTest {
         when(projectService.getAllProjects()).thenReturn(Arrays.asList(dto1, dto2));
 
         // Act and Assert
-        mockMvc.perform(get("/projects")
+        mockMvc.perform(get("/api/projects")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(2))
@@ -190,7 +190,7 @@ public class ProjectControllerTest {
         when(projectService.getAllProjectsByUser(user)).thenReturn(List.of(projectDto));
 
         // Act and Assert
-        mockMvc.perform(get("/projects/all")
+        mockMvc.perform(get("/api/projects/all")
                         .header("Authorization", userId.toString())
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -205,7 +205,7 @@ public class ProjectControllerTest {
         when(userService.getUserById(userId)).thenReturn(null);
 
         // Act and Assert
-        mockMvc.perform(get("/projects/all")
+        mockMvc.perform(get("/api/projects/all")
                         .header("Authorization", userId.toString())
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isUnauthorized());
@@ -231,7 +231,7 @@ public class ProjectControllerTest {
         when(projectUserService.getProjectUserRoleDto(project)).thenReturn(projectUserRoleDto);
 
         // Act and Assert
-        mockMvc.perform(get("/projects/{id}/user-roles", projectId)
+        mockMvc.perform(get("/api/projects/{id}/user-roles", projectId)
                         .header("Authorization", userId.toString())
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
@@ -246,7 +246,7 @@ public class ProjectControllerTest {
         when(userService.getUserById(userId)).thenReturn(null);
 
         // Act and Assert
-        mockMvc.perform(get("/projects/{id}/user-roles", projectId)
+        mockMvc.perform(get("/api/projects/{id}/user-roles", projectId)
                         .header("Authorization", userId.toString())
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isForbidden());
@@ -264,7 +264,7 @@ public class ProjectControllerTest {
         when(projectService.getProjectById(projectId)).thenReturn(null);
 
         // Act and Assert
-        mockMvc.perform(get("/projects/{id}/user-roles", projectId)
+        mockMvc.perform(get("/api/projects/{id}/user-roles", projectId)
                         .header("Authorization", userId.toString())
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
@@ -286,7 +286,7 @@ public class ProjectControllerTest {
         when(projectUserService.getByProjectAndUser(project, user)).thenReturn(null);
 
         // Act and Assert
-        mockMvc.perform(get("/projects/{id}/user-roles", projectId)
+        mockMvc.perform(get("/api/projects/{id}/user-roles", projectId)
                         .header("Authorization", userId.toString())
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isForbidden());
@@ -317,12 +317,12 @@ public class ProjectControllerTest {
         String jsonRequest = "{\"name\":\"New Project\"}";
 
         // Act and Assert
-        mockMvc.perform(post("/projects")
+        mockMvc.perform(post("/api/projects")
                         .header("Authorization", userId.toString())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jsonRequest))
                 .andExpect(status().isCreated())
-                .andExpect(header().string("Location", "http://localhost/projects/100"))
+                .andExpect(header().string("Location", "http://localhost/api/projects/100"))
                 .andExpect(jsonPath("$.id").value(100))
                 .andExpect(jsonPath("$.name").value("New Project"));
 
@@ -338,7 +338,7 @@ public class ProjectControllerTest {
         String jsonRequest = "{\"name\":\"New Project\"}";
 
         // Act and Assert
-        mockMvc.perform(post("/projects")
+        mockMvc.perform(post("/api/projects")
                         .header("Authorization", userId.toString())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jsonRequest))
@@ -376,12 +376,12 @@ public class ProjectControllerTest {
         String jsonRequest = "{\"name\":\"New Task\"}";
 
         // Act and Assert
-        mockMvc.perform(post("/projects/{id}/tasks", projectId)
+        mockMvc.perform(post("/api/projects/{id}/tasks", projectId)
                         .header("Authorization", userId.toString())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jsonRequest))
                 .andExpect(status().isCreated())
-                .andExpect(header().string("Location", "http://localhost/tasks/50"))
+                .andExpect(header().string("Location", "http://localhost/api/tasks/50"))
                 .andExpect(jsonPath("$.id").value(50))
                 .andExpect(jsonPath("$.name").value("New Task"));
 
@@ -398,7 +398,7 @@ public class ProjectControllerTest {
         String jsonRequest = "{\"name\":\"New Task\"}";
 
         // Act and Assert
-        mockMvc.perform(post("/projects/{id}/tasks", projectId)
+        mockMvc.perform(post("/api/projects/{id}/tasks", projectId)
                         .header("Authorization", userId.toString())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jsonRequest))
@@ -419,7 +419,7 @@ public class ProjectControllerTest {
         String jsonRequest = "{\"name\":\"New Task\"}";
 
         // Act and Assert
-        mockMvc.perform(post("/projects/{id}/tasks", projectId)
+        mockMvc.perform(post("/api/projects/{id}/tasks", projectId)
                         .header("Authorization", userId.toString())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jsonRequest))
@@ -444,7 +444,7 @@ public class ProjectControllerTest {
         String jsonRequest = "{\"name\":\"New Task\"}";
 
         // Act and Assert
-        mockMvc.perform(post("/projects/{id}/tasks", projectId)
+        mockMvc.perform(post("/api/projects/{id}/tasks", projectId)
                         .header("Authorization", userId.toString())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jsonRequest))
@@ -472,7 +472,7 @@ public class ProjectControllerTest {
         String jsonRequest = "{\"name\":\"New Task\"}";
 
         // Act and Assert
-        mockMvc.perform(post("/projects/{id}/tasks", projectId)
+        mockMvc.perform(post("/api/projects/{id}/tasks", projectId)
                         .header("Authorization", userId.toString())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jsonRequest))
@@ -505,7 +505,7 @@ public class ProjectControllerTest {
         String jsonRequest = "{\"name\":\"Updated Name\"}";
 
         // Act and Assert
-        mockMvc.perform(put("/projects/{id}", projectId)
+        mockMvc.perform(put("/api/projects/{id}", projectId)
                         .header("Authorization", userId.toString())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jsonRequest))
@@ -525,7 +525,7 @@ public class ProjectControllerTest {
         String jsonRequest = "{\"name\":\"Updated Name\"}";
 
         // Act and Assert
-        mockMvc.perform(put("/projects/{id}", projectId)
+        mockMvc.perform(put("/api/projects/{id}", projectId)
                         .header("Authorization", userId.toString())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jsonRequest))
@@ -546,7 +546,7 @@ public class ProjectControllerTest {
         String jsonRequest = "{\"name\":\"Updated Name\"}";
 
         // Act and Assert
-        mockMvc.perform(put("/projects/{id}", projectId)
+        mockMvc.perform(put("/api/projects/{id}", projectId)
                         .header("Authorization", userId.toString())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jsonRequest))
@@ -571,7 +571,7 @@ public class ProjectControllerTest {
         String jsonRequest = "{\"name\":\"Updated Name\"}";
 
         // Act and Assert
-        mockMvc.perform(put("/projects/{id}", projectId)
+        mockMvc.perform(put("/api/projects/{id}", projectId)
                         .header("Authorization", userId.toString())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jsonRequest))
@@ -599,7 +599,7 @@ public class ProjectControllerTest {
         String jsonRequest = "{\"name\":\"Updated Name\"}";
 
         // Act and Assert
-        mockMvc.perform(put("/projects/{id}", projectId)
+        mockMvc.perform(put("/api/projects/{id}", projectId)
                         .header("Authorization", userId.toString())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jsonRequest))
@@ -639,7 +639,7 @@ public class ProjectControllerTest {
         String jsonRequest = "{\"email\":\"" + newUserEmail + "\", \"userRole\":\"MEMBER\"}";
 
         // Act and Assert
-        mockMvc.perform(put("/projects/{id}/add-user", projectId)
+        mockMvc.perform(put("/api/projects/{id}/add-user", projectId)
                         .header("Authorization", userId.toString())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jsonRequest))
@@ -658,7 +658,7 @@ public class ProjectControllerTest {
         String jsonRequest = "{\"email\":\"new@test.com\", \"userRole\":\"MEMBER\"}";
 
         // Act and Assert
-        mockMvc.perform(put("/projects/{id}/add-user", projectId)
+        mockMvc.perform(put("/api/projects/{id}/add-user", projectId)
                         .header("Authorization", userId.toString())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jsonRequest))
@@ -679,7 +679,7 @@ public class ProjectControllerTest {
         String jsonRequest = "{\"email\":\"new@test.com\", \"userRole\":\"MEMBER\"}";
 
         // Act and Assert
-        mockMvc.perform(put("/projects/{id}/add-user", projectId)
+        mockMvc.perform(put("/api/projects/{id}/add-user", projectId)
                         .header("Authorization", userId.toString())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jsonRequest))
@@ -704,7 +704,7 @@ public class ProjectControllerTest {
         String jsonRequest = "{\"email\":\"new@test.com\", \"userRole\":\"MEMBER\"}";
 
         // Act and Assert
-        mockMvc.perform(put("/projects/{id}/add-user", projectId)
+        mockMvc.perform(put("/api/projects/{id}/add-user", projectId)
                         .header("Authorization", userId.toString())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jsonRequest))
@@ -732,7 +732,7 @@ public class ProjectControllerTest {
         String jsonRequest = "{\"email\":\"new@test.com\", \"userRole\":\"MEMBER\"}";
 
         // Act and Assert
-        mockMvc.perform(put("/projects/{id}/add-user", projectId)
+        mockMvc.perform(put("/api/projects/{id}/add-user", projectId)
                         .header("Authorization", userId.toString())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jsonRequest))
@@ -761,7 +761,7 @@ public class ProjectControllerTest {
         String jsonRequest = "{\"email\":\"nonexistent@test.com\", \"userRole\":\"MEMBER\"}";
 
         // Act and Assert
-        mockMvc.perform(put("/projects/{id}/add-user", projectId)
+        mockMvc.perform(put("/api/projects/{id}/add-user", projectId)
                         .header("Authorization", userId.toString())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jsonRequest))
@@ -799,7 +799,7 @@ public class ProjectControllerTest {
         String jsonRequest = "{\"userId\":2, \"userRole\":\"MEMBER\"}";
 
         // Act and Assert
-        mockMvc.perform(put("/projects/{id}/change-user-role", projectId)
+        mockMvc.perform(put("/api/projects/{id}/change-user-role", projectId)
                         .header("Authorization", requesterId.toString())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jsonRequest))
@@ -814,7 +814,7 @@ public class ProjectControllerTest {
         when(userService.getUserById(userId)).thenReturn(null);
         String jsonRequest = "{\"userId\":2, \"userRole\":\"MEMBER\"}";
 
-        mockMvc.perform(put("/projects/100/change-user-role")
+        mockMvc.perform(put("/api/projects/100/change-user-role")
                         .header("Authorization", userId.toString())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jsonRequest))
@@ -829,7 +829,7 @@ public class ProjectControllerTest {
         when(projectService.getProjectById(999L)).thenReturn(null);
         String jsonRequest = "{\"userId\":2, \"userRole\":\"MEMBER\"}";
 
-        mockMvc.perform(put("/projects/999/change-user-role")
+        mockMvc.perform(put("/api/projects/999/change-user-role")
                         .header("Authorization", userId.toString())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jsonRequest))
@@ -846,7 +846,7 @@ public class ProjectControllerTest {
         when(projectUserService.getByProjectAndUser(project, user)).thenReturn(null);
         String jsonRequest = "{\"userId\":2, \"userRole\":\"MEMBER\"}";
 
-        mockMvc.perform(put("/projects/100/change-user-role")
+        mockMvc.perform(put("/api/projects/100/change-user-role")
                         .header("Authorization", userId.toString())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jsonRequest))
@@ -866,7 +866,7 @@ public class ProjectControllerTest {
         when(projectUserService.getByProjectAndUser(project, user)).thenReturn(pu);
         String jsonRequest = "{\"userId\":2, \"userRole\":\"ADMIN\"}";
 
-        mockMvc.perform(put("/projects/100/change-user-role")
+        mockMvc.perform(put("/api/projects/100/change-user-role")
                         .header("Authorization", userId.toString())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jsonRequest))
@@ -887,7 +887,7 @@ public class ProjectControllerTest {
         when(userService.getUserById(2L)).thenReturn(null);
         String jsonRequest = "{\"userId\":2, \"userRole\":\"MEMBER\"}";
 
-        mockMvc.perform(put("/projects/100/change-user-role")
+        mockMvc.perform(put("/api/projects/100/change-user-role")
                         .header("Authorization", userId.toString())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jsonRequest))

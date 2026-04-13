@@ -24,7 +24,7 @@ import java.util.List;
 @RestController
 @AllArgsConstructor
 @CrossOrigin(origins = "http://localhost:4200")
-@RequestMapping("/projects")
+@RequestMapping("/api/projects")
 public class ProjectController {
     private final EmailService emailService;
     private final ProjectService projectService;
@@ -213,7 +213,7 @@ public class ProjectController {
         projectUserService.save(project, user, UserRole.ADMIN);
 
         return ResponseEntity.created(uriBuilder
-                .path("/projects/{id}")
+                .path("/api/projects/{id}")
                 .buildAndExpand(project.getId())
                 .toUri())
                 .body(projectService.getSimpleProjectDto(project));
@@ -272,7 +272,7 @@ public class ProjectController {
         Task task = taskService.save(taskRequest, project);
         projectService.addTask(project, task);
         return ResponseEntity.created(uriBuilder
-                .path("/tasks/{id}")
+                .path("/api/tasks/{id}")
                 .buildAndExpand(task.getId())
                 .toUri())
                 .body(taskService.getSimpleTaskDto(task));
