@@ -10,6 +10,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
@@ -69,5 +70,78 @@ public class UserServiceImplTest {
         // Assert
         assertThat(result).hasSize(2);
         assertThat(result).containsExactly(dto1, dto2);
+    }
+
+    @Test
+    void testGetUserById_ReturnsUser_WhenUserExists() {
+        // Arrange
+        UserServiceImpl userService = new UserServiceImpl();
+        userService.userRepository = userRepository;
+
+        Long userId = 1L;
+        User expectedUser = new User();
+        expectedUser.setId(userId);
+        expectedUser.setEmail("user@example.com");
+
+        when(userRepository.findById(userId)).thenReturn(Optional.of(expectedUser));
+
+        // Act
+        User result = userService.getUserById(userId);
+
+        // Assert
+        assertThat(result).isEqualTo(expectedUser);
+        assertThat(result.getEmail()).isEqualTo("user@example.com");
+    }
+
+    @Test
+    void testGetUserById_ReturnsNull_WhenUserDoesNotExist() {
+        // Arrange
+        UserServiceImpl userService = new UserServiceImpl();
+        userService.userRepository = userRepository;
+
+        Long userId = 999L;
+        when(userRepository.findById(userId)).thenReturn(Optional.empty());
+
+        // Act
+        User result = userService.getUserById(userId);
+
+        // Assert
+        assertThat(result).isNull();
+    }
+
+    @Test
+    void testGetByEmail_ReturnsUser_WhenEmailExists() {
+        // Arrange
+        UserServiceImpl userService = new UserServiceImpl();
+        userService.userRepository = userRepository;
+
+        String email = "user@example.com";
+        User expectedUser = new User();
+        expectedUser.setEmail(email);
+
+        when(userRepository.findByEmail(email)).thenReturn(Optional.of(expectedUser));
+
+        // Act
+        User result = userService.getByEmail(email);
+
+        // Assert
+        assertThat(result).isEqualTo(expectedUser);
+        assertThat(result.getEmail()).isEqualTo(email);
+    }
+
+    @Test
+    void testGetByEmail_ReturnsNull_WhenEmailDoesNotExist() {
+        // Arrange
+        UserServiceImpl userService = new UserServiceImpl();
+        userService.userRepository = userRepository;
+
+        String email = "missing@example.com";
+        when(userRepository.findByEmail(email)).thenReturn(Optional.empty());
+
+        // Act
+        User result = userService.getByEmail(email);
+
+        // Assert
+        assertThat(result).isNull();
     }
 }
