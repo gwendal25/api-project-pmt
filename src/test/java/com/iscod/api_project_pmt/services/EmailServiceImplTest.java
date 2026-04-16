@@ -117,4 +117,43 @@ public class EmailServiceImplTest {
 
         Mockito.verify(emailSender, Mockito.never()).send(any(SimpleMailMessage.class));
     }
+
+    /**
+     * Test case for the SendTaskAssignNotification method in EmailServiceImpl.
+     * This test verifies that the method correctly constructs and sends an email for task assignment notification.
+     */
+    @Test
+    public void testSendTaskAssignNotification_ValidInput_EmailSent() {
+        String to = "recipient@example.com";
+        String project = "Test Project";
+        String task = "Test Task";
+        String assignedTo = "John Doe";
+
+        emailService.SendTaskAssignNotification(to, project, task, assignedTo);
+
+        ArgumentCaptor<SimpleMailMessage> captor = ArgumentCaptor.forClass(SimpleMailMessage.class);
+        Mockito.verify(emailSender, Mockito.times(1)).send(captor.capture());
+
+        SimpleMailMessage message = captor.getValue();
+        assertEquals("Tâche Test Task assigné", message.getSubject());
+        assertEquals("La tâche Test Task du projet Test Project a été assigné à John Doe.\n Vous recevez cette notification car vous avez activez les notifications par mail.", message.getText());
+        assertArrayEquals(new String[]{to}, message.getTo());
+        assertEquals("gwendalbreton.apppmt@gmail.com", message.getFrom());
+    }
+
+    /**
+     * Test case for the SendTaskAssignNotification method in EmailServiceImpl.
+     * This test ensures that no email is sent when the recipient is empty.
+     */
+    @Test
+    public void testSendTaskAssignNotification_EmptyRecipient_DoNothing() {
+        String to = "";
+        String project = "Test Project";
+        String task = "Test Task";
+        String assignedTo = "John Doe";
+
+        emailService.SendTaskAssignNotification(to, project, task, assignedTo);
+
+        Mockito.verify(emailSender, Mockito.never()).send(any(SimpleMailMessage.class));
+    }
 }
