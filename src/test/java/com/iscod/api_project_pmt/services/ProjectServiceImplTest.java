@@ -1,7 +1,12 @@
 package com.iscod.api_project_pmt.services;
 
+import com.iscod.api_project_pmt.dtos.project.ProjectDto;
 import com.iscod.api_project_pmt.dtos.project.SimpleProjectDto;
 import com.iscod.api_project_pmt.entities.Project;
+import com.iscod.api_project_pmt.entities.ProjectUser;
+import com.iscod.api_project_pmt.entities.User;
+import com.iscod.api_project_pmt.enums.UserRole;
+import com.iscod.api_project_pmt.mappers.ProjectMapper;
 import com.iscod.api_project_pmt.mappers.SimpleProjectMapper;
 import com.iscod.api_project_pmt.repositories.ProjectRepository;
 import org.junit.jupiter.api.Test;
@@ -23,6 +28,9 @@ public class ProjectServiceImplTest {
 
     @Mock
     private SimpleProjectMapper simpleProjectMapper;
+
+    @Mock
+    private ProjectMapper projectMapper;
 
     @Test
     void testGetAllProjects_ReturnsEmptyList_WhenNoProjectsExist() {
@@ -72,5 +80,53 @@ public class ProjectServiceImplTest {
         // Assert
         assertThat(result).hasSize(2);
         assertThat(result).containsExactly(dto1, dto2);
+    }
+
+    @Test
+    void testGetSimpleProjectDto_ReturnsMappedDto() {
+        // Arrange
+        ProjectServiceImpl projectService = new ProjectServiceImpl();
+        projectService.simpleProjectMapper = simpleProjectMapper;
+
+        Project project = new Project();
+        project.setName("Test Project");
+
+        SimpleProjectDto expectedDto = new SimpleProjectDto();
+        expectedDto.setName("Test Project");
+
+        when(simpleProjectMapper.toDto(project)).thenReturn(expectedDto);
+
+        // Act
+        SimpleProjectDto result = projectService.getSimpleProjectDto(project);
+
+        // Assert
+        assertThat(result).isEqualTo(expectedDto);
+    }
+
+    @Test
+    void testGetProjectDto_ReturnsMappedDto() {
+        // Arrange
+        ProjectServiceImpl projectService = new ProjectServiceImpl();
+        projectService.projectMapper = projectMapper;
+
+        Project project = new Project();
+        project.setName("Test Project");
+
+        User user = new User();
+        user.setEmail("test@example.com");
+
+        ProjectUser projectUser = new ProjectUser();
+        projectUser.setRole(UserRole.ADMIN);
+
+        ProjectDto expectedDto = new ProjectDto();
+        expectedDto.setName("Test Project");
+
+        when(projectMapper.toDto(project, user, UserRole.ADMIN)).thenReturn(expectedDto);
+
+        // Act
+        ProjectDto result = projectService.getProjectDto(project, user, projectUser);
+
+        // Assert
+        assertThat(result).isEqualTo(expectedDto);
     }
 }
