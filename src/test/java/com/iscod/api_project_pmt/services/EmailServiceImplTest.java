@@ -78,4 +78,43 @@ public class EmailServiceImplTest {
 
         Mockito.verify(emailSender, Mockito.never()).send(any(SimpleMailMessage.class));
     }
+
+    /**
+     * Test case for the SendProjectInvite method in EmailServiceImpl.
+     * This test verifies that the method correctly constructs and sends an email for project invitation.
+     */
+    @Test
+    public void testSendProjectInvite_ValidInput_EmailSent() {
+        String from = "sender@example.com";
+        String to = "recipient@example.com";
+        String project = "Test Project";
+        String role = "Developer";
+
+        emailService.SendProjectInvite(from, to, project, role);
+
+        ArgumentCaptor<SimpleMailMessage> captor = ArgumentCaptor.forClass(SimpleMailMessage.class);
+        Mockito.verify(emailSender, Mockito.times(1)).send(captor.capture());
+
+        SimpleMailMessage message = captor.getValue();
+        assertEquals("Invitation au project Test Project", message.getSubject());
+        assertEquals("sender@example.com vous invite à rejoindre le projet Test Project en tant que Developer.\n Vous avez automatiquement été ajouter au projet.", message.getText());
+        assertArrayEquals(new String[]{to}, message.getTo());
+        assertEquals("gwendalbreton.apppmt@gmail.com", message.getFrom());
+    }
+
+    /**
+     * Test case for the SendProjectInvite method in EmailServiceImpl.
+     * This test ensures that no email is sent when the recipient is empty.
+     */
+    @Test
+    public void testSendProjectInvite_EmptyRecipient_DoNothing() {
+        String from = "sender@example.com";
+        String to = "";
+        String project = "Test Project";
+        String role = "Developer";
+
+        emailService.SendProjectInvite(from, to, project, role);
+
+        Mockito.verify(emailSender, Mockito.never()).send(any(SimpleMailMessage.class));
+    }
 }
