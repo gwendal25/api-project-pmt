@@ -15,6 +15,10 @@ public class EmailServiceImpl implements EmailService {
 
     @Override
     public void SendSimpleMessage(String to, String subject, String text) {
+        if (to == null || to.isBlank()) {
+            return;
+        }
+
         SimpleMailMessage message = new SimpleMailMessage();
         message.setFrom("gwendalbreton.apppmt@gmail.com");
         message.setTo(to);
